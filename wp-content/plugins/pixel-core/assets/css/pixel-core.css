@@ -1,0 +1,5 @@
+.dark-card { background: #342f29; color: #fff; }
+.dark-card p { color: rgba(255,255,255,.78); }
+.two-col { grid-template-columns: 1fr 1fr; margin-top: 24px; }
+.status-pill.neutral { background: #e8e8e8; color: #555; }
+@media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }

@@ -1,0 +1,13 @@
+Name,Type,Category,Short Description,Starting Price,Options
+Business Cards,variable,Marketing Materials,Premium cards with matte gloss and soft touch finishes,19.99,"Size; Paper Stock; Printed Sides; Finish; Quantity"
+Flyers,variable,Marketing Materials,High-quality vibrant flyers for promotions and events,35.00,"Size; Paper Type; Sides; Quantity"
+Brochures,variable,Marketing Materials,Tri-fold bi-fold and custom folding brochures,55.00,"Fold Type; Paper; Finish; Quantity"
+Stickers,variable,Marketing Materials,Durable weather-resistant vinyl stickers in custom shapes,20.00,"Shape; Size; Material; Quantity"
+Labels,variable,Packaging,Roll labels and sheet labels for product packaging,40.00,"Shape; Material; Roll/Sheet; Quantity"
+Posters,variable,Large Format,Large-format posters on premium photo-quality paper,15.00,"Size; Paper; Lamination; Quantity"
+Vinyl Banners,variable,Large Format,Outdoor-grade banners with hemming and grommets,45.00,"Size; Material; Grommets; Quantity"
+Acrylic Signs,variable,Signage,Frosted acrylic lobby signs with standoff hardware,120.00,"Size; Thickness; Finish; Hardware"
+Vehicle Wraps,quote,Signage,Custom fleet and vehicle wrap printing,0,"Vehicle Type; Coverage; Material; Design Upload"
+Apparel Printing,quote,Apparel,Direct-to-garment and screen printing for corporate wear,0,"Garment Type; Colors; Sizes; Quantity"
+Packaging Boxes,variable,Packaging,Custom product boxes and branded packaging,80.00,"Box Type; Size; Material; Quantity"
+Trade Show Displays,quote,Large Format,Booth backdrops banners and trade show displays,0,"Display Type; Size; Material; Hardware"

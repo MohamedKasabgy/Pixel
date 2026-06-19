@@ -1,0 +1,23 @@
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# WordPress local/runtime
+wp-config.php
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+wp-content/debug.log
+
+# Dependencies/build artifacts
+node_modules/
+vendor/
+dist/
+build/
+
+# Secrets
+.env
+.env.*
+!.env.example
