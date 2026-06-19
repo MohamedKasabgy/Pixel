@@ -1,0 +1,821 @@
+# Pixel WordPress Project — Detailed Task Checklist
+
+Project: **Pixel**  
+Stack: **WordPress + WooCommerce + Custom Theme + Custom Plugin**  
+Goal: Build a professional client-facing demo for a custom printing / signs business within 3 weeks.
+
+Repository:  
+`https://github.com/MohamedKasabgy/Pixel`
+
+---
+
+## How Everyone Should Work
+
+Do **not** work directly on `main`.
+
+Before starting any task:
+
+```bash
+git pull origin main
+```
+
+Create a feature branch:
+
+```bash
+git checkout -b feature/task-name
+```
+
+Before pushing:
+
+```bash
+git status
+```
+
+After finishing a task:
+
+```bash
+git add .
+git commit -m "Clear commit message"
+git push -u origin feature/task-name
+```
+
+Then open a Pull Request into `main`.
+
+---
+
+## Local Setup Checklist
+
+Each team member must complete this first.
+
+- [ ] Clone the repo.
+
+```bash
+git clone https://github.com/MohamedKasabgy/Pixel.git
+cd Pixel
+```
+
+- [ ] Install and open LocalWP.
+- [ ] Create a new WordPress site named `Pixel`.
+- [ ] Copy the theme into the LocalWP WordPress site.
+
+```bash
+rsync -av wp-content/themes/pixel-signs-theme "$HOME/Local Sites/pixel/app/public/wp-content/themes/"
+```
+
+- [ ] Copy the plugin into the LocalWP WordPress site.
+
+```bash
+rsync -av wp-content/plugins/pixel-core "$HOME/Local Sites/pixel/app/public/wp-content/plugins/"
+```
+
+- [ ] Activate the theme:
+  - Appearance > Themes > Activate **Pixel Signs Theme**
+- [ ] Activate the plugin:
+  - Plugins > Activate **Pixel Core**
+- [ ] Install and activate WooCommerce.
+- [ ] Create the required pages using LocalWP > Site Shell.
+
+```bash
+wp post create --post_type=page --post_title="Products" --post_name="products" --post_status=publish --page_template="page-templates/products.php"
+
+wp post create --post_type=page --post_title="Request Quote" --post_name="request-quote" --post_status=publish --page_template="page-templates/request-quote.php"
+
+wp post create --post_type=page --post_title="Upload Artwork" --post_name="upload-artwork" --post_status=publish --page_template="page-templates/upload-artwork.php"
+
+wp post create --post_type=page --post_title="Client Dashboard" --post_name="client-dashboard" --post_status=publish --page_template="page-templates/client-dashboard.php"
+
+wp post create --post_type=page --post_title="Order Tracking" --post_name="order-tracking" --post_status=publish --page_template="page-templates/order-tracking.php"
+```
+
+- [ ] Confirm these pages work:
+  - `/products`
+  - `/request-quote`
+  - `/upload-artwork`
+  - `/client-dashboard`
+  - `/order-tracking`
+
+---
+
+# Mohamed — Products + WooCommerce + Project Lead
+
+Branch:
+
+```bash
+git checkout -b feature/products-woocommerce
+```
+
+## 1. Products Page Filtering
+
+Main file:
+
+```text
+wp-content/themes/pixel-signs-theme/page-templates/products.php
+```
+
+Checklist:
+
+- [ ] Open `products.php`.
+- [ ] Read the `category` query value from the URL using `$_GET['category']`.
+- [ ] If no category is provided, show all products or featured products.
+- [ ] Create a category data structure in the code for:
+  - [ ] `large-format`
+  - [ ] `marketing`
+  - [ ] `signage`
+  - [ ] `apparel`
+  - [ ] `business-cards`
+- [ ] For each category, define:
+  - [ ] Page title
+  - [ ] Page description
+  - [ ] Product list
+- [ ] Make `/products/?category=large-format` show Large Format content.
+- [ ] Make `/products/?category=marketing` show Marketing content.
+- [ ] Make `/products/?category=signage` show Signage content.
+- [ ] Make `/products/?category=apparel` show Apparel content.
+- [ ] Make `/products/?category=business-cards` show Business Cards content.
+- [ ] Make sure the product cards change based on the selected category.
+- [ ] Test every header category link.
+- [ ] Make sure an unknown category does not break the page.
+
+Acceptance criteria:
+
+- [ ] The URL changes correctly.
+- [ ] The page title changes correctly.
+- [ ] The page description changes correctly.
+- [ ] The displayed products change correctly.
+- [ ] Unknown categories fallback safely.
+
+---
+
+## 2. Sample Products
+
+Create 10–15 demo products.
+
+Checklist:
+
+- [ ] Vinyl Banners
+- [ ] Business Cards
+- [ ] Flyers
+- [ ] Brochures
+- [ ] Posters
+- [ ] Stickers
+- [ ] Yard Signs
+- [ ] Foam Boards
+- [ ] Roll Up Banners
+- [ ] T-Shirts
+- [ ] Packaging Boxes
+- [ ] Labels
+- [ ] Menus
+- [ ] Postcards
+- [ ] Custom Quote Product
+
+Each product should include:
+
+- [ ] Product name
+- [ ] Category
+- [ ] Short description
+- [ ] Starting price or “Request Quote”
+- [ ] Image or visual placeholder
+- [ ] View Details button
+- [ ] Request Quote button
+- [ ] Upload Artwork button
+
+Acceptance criteria:
+
+- [ ] Each category has at least 2 products.
+- [ ] Products are understandable to the client.
+- [ ] Buttons go to the correct pages.
+
+---
+
+## 3. Product Details Page
+
+Main file:
+
+```text
+wp-content/themes/pixel-signs-theme/single-product.php
+```
+
+Checklist:
+
+- [ ] Improve the product details layout.
+- [ ] Show product image.
+- [ ] Show product title.
+- [ ] Show short description.
+- [ ] Add visible product options:
+  - [ ] Size
+  - [ ] Material
+  - [ ] Finish
+  - [ ] Quantity
+  - [ ] Turnaround Time
+- [ ] Add Add to Cart button.
+- [ ] Add Request Quote button.
+- [ ] Add Upload Artwork button.
+- [ ] Test desktop layout.
+- [ ] Test mobile layout.
+
+Acceptance criteria:
+
+- [ ] The product page is clear.
+- [ ] Product options are visible.
+- [ ] Buttons work or go to the right pages.
+
+---
+
+## 4. WooCommerce Basic Setup
+
+Checklist:
+
+- [ ] Open WooCommerce inside WordPress admin.
+- [ ] Create WooCommerce product categories:
+  - [ ] Large Format
+  - [ ] Marketing
+  - [ ] Signage
+  - [ ] Apparel
+  - [ ] Business Cards
+- [ ] Create demo WooCommerce products.
+- [ ] Assign each product to the correct category.
+- [ ] Confirm Cart opens.
+- [ ] Confirm Checkout opens.
+- [ ] Confirm Add to Cart works for at least one product.
+
+Acceptance criteria:
+
+- [ ] WooCommerce products exist.
+- [ ] WooCommerce categories exist.
+- [ ] Cart and Checkout pages work.
+
+---
+
+## 5. Mohamed Final Checks
+
+Before opening a Pull Request:
+
+- [ ] Run `git status`.
+- [ ] Confirm you are not on `main`.
+- [ ] Run PHP syntax check.
+
+```bash
+find wp-content -name "*.php" -print0 | xargs -0 -n1 php -l
+```
+
+- [ ] Test Home.
+- [ ] Test Products.
+- [ ] Test every category link.
+- [ ] Test Product Details.
+- [ ] Commit with a clear message.
+- [ ] Push the branch.
+- [ ] Open a Pull Request.
+
+---
+
+# Abdullah — Homepage + UI + Content Pages
+
+Branch:
+
+```bash
+git checkout -b feature/homepage-ui-content
+```
+
+## 1. Homepage Hero
+
+Main files:
+
+```text
+wp-content/themes/pixel-signs-theme/front-page.php
+wp-content/themes/pixel-signs-theme/assets/css/main.css
+```
+
+Checklist:
+
+- [ ] Open `front-page.php`.
+- [ ] Improve the first homepage section.
+- [ ] Add a clear hero headline.
+- [ ] Add a short hero description.
+- [ ] Add Request a Quote button.
+- [ ] Add Browse Products button.
+- [ ] Add Upload Artwork button.
+- [ ] Replace the image placeholder with a real image or better visual block.
+- [ ] Make sure all CTA buttons go to the correct pages.
+
+Suggested headlines:
+
+```text
+Custom Printing Made Simple
+Signs, Marketing Materials & Custom Prints
+High-Quality Printing for Growing Businesses
+```
+
+Acceptance criteria:
+
+- [ ] The homepage gives a professional first impression.
+- [ ] The client understands the business from the first section.
+- [ ] CTA buttons are clear and working.
+
+---
+
+## 2. Product Categories Section
+
+Checklist:
+
+- [ ] Add or improve the homepage categories section.
+- [ ] Add Large Format card.
+- [ ] Add Marketing card.
+- [ ] Add Signage card.
+- [ ] Add Apparel card.
+- [ ] Add Business Cards card.
+- [ ] Add Packaging card if suitable.
+- [ ] Each card includes:
+  - [ ] Image or clean placeholder
+  - [ ] Title
+  - [ ] Short description
+  - [ ] Link to the correct category
+
+Acceptance criteria:
+
+- [ ] Every card links to the correct category.
+- [ ] Cards look consistent.
+- [ ] The section is clear to the client.
+
+---
+
+## 3. Partners / Brands Section
+
+Checklist:
+
+- [ ] Add a partners or brands section to the homepage.
+- [ ] Add a heading such as `Trusted by growing businesses`.
+- [ ] Add 5–8 logo placeholders.
+- [ ] Make the logos look organized and professional.
+- [ ] Make the section responsive.
+
+Acceptance criteria:
+
+- [ ] The section builds trust.
+- [ ] The design is clean and professional.
+
+---
+
+## 4. Why Choose Us Section
+
+Checklist:
+
+- [ ] Add a Why Choose Us section.
+- [ ] Add Fast turnaround.
+- [ ] Add Custom quotes.
+- [ ] Add Free file review.
+- [ ] Add Premium print quality.
+- [ ] Add Local delivery / pickup.
+- [ ] Add Bulk order support.
+- [ ] Each feature has a title and short description.
+
+Acceptance criteria:
+
+- [ ] The section explains why clients should choose the company.
+- [ ] The section works on mobile.
+
+---
+
+## 5. Replace Visual Placeholders
+
+Checklist:
+
+- [ ] Search for placeholder text like `Industrial press image`.
+- [ ] Replace placeholders with images or better visual blocks.
+- [ ] Make sure images do not break the layout.
+- [ ] Use images related to printing, signs, production, packaging, or marketing materials.
+- [ ] Avoid low-quality random images.
+
+Acceptance criteria:
+
+- [ ] The homepage does not show ugly gray placeholder boxes.
+- [ ] Visuals look demo-ready.
+
+---
+
+## 6. Header + Footer Polish
+
+Checklist:
+
+- [ ] Improve the header if needed.
+- [ ] Make sure header links are clear.
+- [ ] Make sure the header works on mobile.
+- [ ] Improve the footer.
+- [ ] Add footer links:
+  - [ ] Products
+  - [ ] Request Quote
+  - [ ] Upload Artwork
+  - [ ] Contact
+  - [ ] FAQ
+  - [ ] Privacy Policy
+  - [ ] Terms
+- [ ] Add placeholder contact information.
+
+Acceptance criteria:
+
+- [ ] Header and footer are consistent.
+- [ ] Main links exist.
+- [ ] Mobile layout does not break.
+
+---
+
+## 7. Content Pages
+
+Create or improve these pages:
+
+- [ ] About
+- [ ] Contact
+- [ ] FAQ
+- [ ] Privacy Policy
+- [ ] Terms & Conditions
+- [ ] Refund Policy
+- [ ] Shipping / Delivery Policy
+- [ ] Pickup Locations
+
+Each page should include:
+
+- [ ] Clear title
+- [ ] Professional starter content
+- [ ] Simple consistent layout
+- [ ] Footer link if important
+
+Contact page should include:
+
+- [ ] Contact form
+- [ ] Email
+- [ ] Phone
+- [ ] Location
+- [ ] Working hours
+- [ ] Map placeholder
+
+FAQ page should include:
+
+- [ ] How do I request a quote?
+- [ ] Can I upload my own design?
+- [ ] What file types do you accept?
+- [ ] How long does printing take?
+- [ ] Can I track my order?
+- [ ] Do you offer delivery?
+- [ ] Can I reorder previous prints?
+
+Acceptance criteria:
+
+- [ ] Pages exist.
+- [ ] Pages are not empty.
+- [ ] Pages look suitable for a demo.
+
+---
+
+## 8. Responsive Design
+
+Checklist:
+
+- [ ] Test homepage on desktop.
+- [ ] Test homepage on tablet.
+- [ ] Test homepage on mobile.
+- [ ] Make cards stack properly on mobile.
+- [ ] Make sure text does not overflow.
+- [ ] Make buttons easy to tap.
+- [ ] Make sure the header does not cover content.
+
+Acceptance criteria:
+
+- [ ] The site looks acceptable on mobile.
+- [ ] There is no obvious horizontal overflow.
+- [ ] Buttons and links are usable.
+
+---
+
+## 9. Abdullah Final Checks
+
+Before opening a Pull Request:
+
+- [ ] Run `git status`.
+- [ ] Confirm you are not on `main`.
+- [ ] Run PHP syntax check.
+
+```bash
+find wp-content -name "*.php" -print0 | xargs -0 -n1 php -l
+```
+
+- [ ] Test Home.
+- [ ] Test About.
+- [ ] Test Contact.
+- [ ] Test FAQ.
+- [ ] Test mobile view.
+- [ ] Commit with a clear message.
+- [ ] Push the branch.
+- [ ] Open a Pull Request.
+
+---
+
+# Ahmed — Quote + Upload + Client Portal
+
+Branch:
+
+```bash
+git checkout -b feature/quote-upload-portal
+```
+
+## 1. Request Quote Page
+
+Main file:
+
+```text
+wp-content/themes/pixel-signs-theme/page-templates/request-quote.php
+```
+
+Checklist:
+
+- [ ] Open the Request Quote page.
+- [ ] Improve the form layout.
+- [ ] Add Full name field.
+- [ ] Add Email field.
+- [ ] Add Phone field.
+- [ ] Add Company name field.
+- [ ] Add Product type field.
+- [ ] Add Quantity field.
+- [ ] Add Size field.
+- [ ] Add Material field.
+- [ ] Add Finish field.
+- [ ] Add Deadline field.
+- [ ] Add Delivery method field.
+- [ ] Add Notes field.
+- [ ] Add optional File upload field if suitable.
+- [ ] Add clear submit button.
+
+Acceptance criteria:
+
+- [ ] The form is clear.
+- [ ] Important fields exist.
+- [ ] The page looks suitable for the client demo.
+
+---
+
+## 2. Save Quote Requests
+
+Expected file:
+
+```text
+wp-content/plugins/pixel-core/includes/class-pixel-core.php
+```
+
+Checklist:
+
+- [ ] Confirm the form submits data.
+- [ ] Confirm data is saved in WordPress.
+- [ ] Confirm Quote Requests appear in WordPress admin.
+- [ ] Each quote request should show:
+  - [ ] Customer name
+  - [ ] Email
+  - [ ] Phone
+  - [ ] Product type
+  - [ ] Quantity
+  - [ ] Status
+  - [ ] Date
+  - [ ] Notes
+- [ ] Add success message after submission.
+- [ ] Add error message if submission fails.
+
+Acceptance criteria:
+
+- [ ] A new quote request can be submitted.
+- [ ] The quote request appears in admin.
+- [ ] The user sees a success message.
+
+---
+
+## 3. Quote Status
+
+Checklist:
+
+- [ ] Add status to quote requests.
+- [ ] Required statuses:
+  - [ ] New
+  - [ ] Under Review
+  - [ ] Quoted
+  - [ ] Approved
+  - [ ] Rejected
+  - [ ] Converted to Order
+- [ ] Make sure the status appears in admin.
+- [ ] If simple, allow admin to change status.
+
+Acceptance criteria:
+
+- [ ] Every quote has a clear status.
+- [ ] Status is visible in admin.
+
+---
+
+## 4. Upload Artwork Page
+
+Main file:
+
+```text
+wp-content/themes/pixel-signs-theme/page-templates/upload-artwork.php
+```
+
+Checklist:
+
+- [ ] Improve Upload Artwork page layout.
+- [ ] Add Name field.
+- [ ] Add Email field.
+- [ ] Add Order number field.
+- [ ] Add Product / project name field.
+- [ ] Add Notes field.
+- [ ] Add File upload field.
+- [ ] Add clear submit button.
+
+Allowed file types:
+
+- [ ] PDF
+- [ ] PNG
+- [ ] JPG
+- [ ] JPEG
+- [ ] AI
+- [ ] PSD
+- [ ] EPS
+- [ ] ZIP
+
+Acceptance criteria:
+
+- [ ] The form is clear.
+- [ ] The user can upload a file.
+- [ ] The user sees a success message after upload.
+
+---
+
+## 5. Artwork Admin
+
+Checklist:
+
+- [ ] Confirm uploaded files appear under Artwork Files.
+- [ ] Each artwork file should show:
+  - [ ] Name
+  - [ ] Email
+  - [ ] Order number
+  - [ ] Project name
+  - [ ] File link
+  - [ ] Status
+  - [ ] Date
+- [ ] Add artwork review statuses:
+  - [ ] Uploaded
+  - [ ] Under Review
+  - [ ] Approved
+  - [ ] Needs Revision
+  - [ ] Rejected
+
+Acceptance criteria:
+
+- [ ] Uploaded files appear in WordPress admin.
+- [ ] Each uploaded file has a link.
+- [ ] Each uploaded file has a clear status.
+
+---
+
+## 6. Client Dashboard
+
+Main file:
+
+```text
+wp-content/themes/pixel-signs-theme/page-templates/client-dashboard.php
+```
+
+Checklist:
+
+- [ ] Improve Client Dashboard layout.
+- [ ] Add Welcome card.
+- [ ] Add Active orders section.
+- [ ] Add Recent quotes section.
+- [ ] Add Uploaded files section.
+- [ ] Add Request Quote button.
+- [ ] Add Upload Artwork button.
+- [ ] Add Track Order button.
+- [ ] Use demo data if full data connection is not ready.
+
+Acceptance criteria:
+
+- [ ] The page clearly explains the client portal idea.
+- [ ] The page has convincing demo data.
+- [ ] Buttons go to the correct pages.
+
+---
+
+## 7. Order Tracking
+
+Main file:
+
+```text
+wp-content/themes/pixel-signs-theme/page-templates/order-tracking.php
+```
+
+Checklist:
+
+- [ ] Improve Order Tracking page layout.
+- [ ] Add search input for order number.
+- [ ] Add search button.
+- [ ] Add demo order result.
+- [ ] Add order timeline.
+- [ ] Add statuses:
+  - [ ] Quote Requested
+  - [ ] Under Review
+  - [ ] Approved
+  - [ ] In Production
+  - [ ] Quality Check
+  - [ ] Ready for Pickup
+  - [ ] Out for Delivery
+  - [ ] Completed
+- [ ] Make the page clear for users.
+
+Acceptance criteria:
+
+- [ ] The customer can understand the order status.
+- [ ] Timeline is clear.
+- [ ] Search looks functional, even if demo-based.
+
+---
+
+## 8. Ahmed Final Checks
+
+Before opening a Pull Request:
+
+- [ ] Run `git status`.
+- [ ] Confirm you are not on `main`.
+- [ ] Run PHP syntax check.
+
+```bash
+find wp-content -name "*.php" -print0 | xargs -0 -n1 php -l
+```
+
+- [ ] Test Request Quote.
+- [ ] Test Upload Artwork.
+- [ ] Test Client Dashboard.
+- [ ] Test Order Tracking.
+- [ ] Confirm admin pages open.
+- [ ] Commit with a clear message.
+- [ ] Push the branch.
+- [ ] Open a Pull Request.
+
+---
+
+# Shared QA Checklist
+
+After all work is merged:
+
+- [ ] Home opens.
+- [ ] Products opens.
+- [ ] Product category links work.
+- [ ] Product Details opens.
+- [ ] Request Quote opens.
+- [ ] Quote request saves.
+- [ ] Upload Artwork opens.
+- [ ] File upload works.
+- [ ] Client Dashboard opens.
+- [ ] Order Tracking opens.
+- [ ] Cart opens.
+- [ ] Checkout opens.
+- [ ] About opens.
+- [ ] Contact opens.
+- [ ] FAQ opens.
+- [ ] Policy pages open.
+- [ ] Site is acceptable on mobile.
+- [ ] No PHP syntax errors.
+- [ ] No obvious broken layout.
+- [ ] Every Pull Request has a clear description.
+
+---
+
+# Priority Order
+
+Start in this order:
+
+1. Mohamed:
+   - Products filtering
+
+2. Abdullah:
+   - Homepage hero + visual placeholders
+
+3. Ahmed:
+   - Request Quote form
+
+Then:
+
+4. Mohamed:
+   - Sample products + product details
+
+5. Abdullah:
+   - Content pages + responsive design
+
+6. Ahmed:
+   - Upload artwork + client dashboard + order tracking
+
+---
+
+# Definition of Done
+
+A checkbox can only be marked as done when:
+
+- [ ] It has been implemented.
+- [ ] It has been tested locally.
+- [ ] It did not break another page.
+- [ ] It has a clear commit.
+- [ ] It is pushed to a Pull Request.
