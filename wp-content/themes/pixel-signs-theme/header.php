@@ -32,11 +32,11 @@ if (!defined('ABSPATH')) {
             'items_wrap'     => '<ul>%3$s</ul>',
         ]);
         ?>
-        <a class="nav-link" href="<?php echo esc_url(home_url('/products/')); ?>">Large Format</a>
-        <a class="nav-link" href="<?php echo esc_url(home_url('/products/')); ?>">Marketing</a>
-        <a class="nav-link" href="<?php echo esc_url(home_url('/products/')); ?>">Signage</a>
-        <a class="nav-link" href="<?php echo esc_url(home_url('/products/')); ?>">Apparel</a>
-        <a class="nav-link" href="<?php echo esc_url(home_url('/products/')); ?>">Business Cards</a>
+        <a class="nav-link" href="<?php echo esc_url(home_url('/products/?category=large-format')); ?>">Large Format</a>
+        <a class="nav-link" href="<?php echo esc_url(home_url('/products/?category=marketing')); ?>">Marketing</a>
+        <a class="nav-link" href="<?php echo esc_url(home_url('/products/?category=signage')); ?>">Signage</a>
+        <a class="nav-link" href="<?php echo esc_url(home_url('/products/?category=apparel')); ?>">Apparel</a>
+        <a class="nav-link" href="<?php echo esc_url(home_url('/products/?category=business-cards')); ?>">Business Cards</a>
     </nav>
 
     <div class="header-actions">
