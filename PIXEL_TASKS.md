@@ -152,38 +152,40 @@ Create 10–15 demo products.
 
 Checklist:
 
-- [ ] Vinyl Banners
-- [ ] Business Cards
-- [ ] Flyers
-- [ ] Brochures
-- [ ] Posters
-- [ ] Stickers
-- [ ] Yard Signs
-- [ ] Foam Boards
-- [ ] Roll Up Banners
-- [ ] T-Shirts
-- [ ] Packaging Boxes
-- [ ] Labels
-- [ ] Menus
-- [ ] Postcards
-- [ ] Custom Quote Product
+- [x] Vinyl Banners
+- [x] Business Cards
+- [x] Flyers
+- [x] Brochures
+- [x] Posters
+- [x] Stickers
+- [x] Yard Signs
+- [x] Foam Boards
+- [x] Roll Up Banners
+- [x] T-Shirts
+- [x] Packaging Boxes
+- [x] Labels
+- [x] Menus
+- [x] Postcards
+- [x] Custom Quote Product
 
 Each product should include:
 
-- [ ] Product name
-- [ ] Category
-- [ ] Short description
-- [ ] Starting price or “Request Quote”
-- [ ] Image or visual placeholder
-- [ ] View Details button
-- [ ] Request Quote button
-- [ ] Upload Artwork button
+- [x] Product name
+- [x] Category
+- [x] Short description
+- [x] Starting price or “Request Quote”
+- [x] Image or visual placeholder
+- [x] View Details button
+- [x] Request Quote button
+- [x] Upload Artwork button
 
 Acceptance criteria:
 
-- [ ] Each category has at least 2 products.
-- [ ] Products are understandable to the client.
-- [ ] Buttons go to the correct pages.
+- [x] Each category has at least 2 products.
+- [x] Products are understandable to the client.
+- [x] Buttons go to the correct pages.
+
+Known follow-up: product card action buttons are functional but need visual styling during UI polish.
 
 ---
 
@@ -197,27 +199,30 @@ wp-content/themes/pixel-signs-theme/single-product.php
 
 Checklist:
 
-- [ ] Improve the product details layout.
-- [ ] Show product image.
-- [ ] Show product title.
-- [ ] Show short description.
-- [ ] Add visible product options:
-  - [ ] Size
-  - [ ] Material
-  - [ ] Finish
-  - [ ] Quantity
-  - [ ] Turnaround Time
-- [ ] Add Add to Cart button.
-- [ ] Add Request Quote button.
-- [ ] Add Upload Artwork button.
-- [ ] Test desktop layout.
-- [ ] Test mobile layout.
+- [x] Improve the product details layout.
+- [x] Show product image.
+- [x] Show product title.
+- [x] Show short description.
+- [x] Add visible product options:
+  - [x] Size
+  - [x] Material
+  - [x] Finish
+  - [x] Quantity
+  - [x] Turnaround Time
+- [x] Add Add to Cart button.
+- [x] Add Request Quote button.
+- [x] Add Upload Artwork button.
+- [x] Test desktop layout.
+- [x] Test mobile layout.
 
 Acceptance criteria:
 
-- [ ] The product page is clear.
-- [ ] Product options are visible.
-- [ ] Buttons work or go to the right pages.
+- [x] The product page is clear.
+- [x] Product options are visible.
+- [x] Buttons work or go to the right pages.
+
+Known follow-up: product details page is functional, but final visual polish can be improved later during UI polish.
+
 
 ---
 
@@ -225,46 +230,55 @@ Acceptance criteria:
 
 Checklist:
 
-- [ ] Open WooCommerce inside WordPress admin.
-- [ ] Create WooCommerce product categories:
-  - [ ] Large Format
-  - [ ] Marketing
-  - [ ] Signage
-  - [ ] Apparel
-  - [ ] Business Cards
-- [ ] Create demo WooCommerce products.
-- [ ] Assign each product to the correct category.
-- [ ] Confirm Cart opens.
-- [ ] Confirm Checkout opens.
-- [ ] Confirm Add to Cart works for at least one product.
+- [x] Open WooCommerce inside WordPress admin.
+- [x] Create WooCommerce product categories:
+  - [x] Large Format
+  - [x] Marketing
+  - [x] Signage
+  - [x] Apparel
+  - [x] Business Cards
+- [x] Create demo WooCommerce products.
+- [x] Assign each product to the correct category.
+- [x] Confirm Cart opens.
+- [x] Confirm Checkout opens.
+- [x] Confirm Add to Cart works for at least one product.
 
 Acceptance criteria:
 
-- [ ] WooCommerce products exist.
-- [ ] WooCommerce categories exist.
-- [ ] Cart and Checkout pages work.
+- [x] WooCommerce products exist.
+- [x] WooCommerce categories exist.
+- [x] Cart and Checkout pages work.
+
+Known follow-up:
+- WooCommerce demo products and categories were created in the LocalWP database for the demo. They are not stored in Git unless we later add an import/seed file.
 
 ---
 
 ## 5. Mohamed Final Checks
 
-Before opening a Pull Request:
+Final checklist:
 
-- [ ] Run `git status`.
-- [ ] Confirm you are not on `main`.
-- [ ] Run PHP syntax check.
+- [x] Run `git status`.
+- [x] Confirm final work is merged into `main`.
+- [x] Run PHP syntax check from LocalWP Site Shell.
+- [x] Test Home.
+- [x] Test Products.
+- [x] Test every category link.
+- [x] Test Product Details.
+- [x] Confirm Cart opens.
+- [x] Confirm Checkout opens.
+- [x] Confirm Add to Cart works.
+- [x] Confirm Request Quote links work.
+- [x] Confirm Upload Artwork links work.
+- [x] Commit with a clear message.
+- [x] Push final work to `main`.
 
-```bash
-find wp-content -name "*.php" -print0 | xargs -0 -n1 php -l
-```
-
-- [ ] Test Home.
-- [ ] Test Products.
-- [ ] Test every category link.
-- [ ] Test Product Details.
-- [ ] Commit with a clear message.
-- [ ] Push the branch.
-- [ ] Open a Pull Request.
+Final check note:
+- Mohamed final checks completed.
+- Git is clean on `main`.
+- Product, cart, checkout, quote, and upload demo flow were reviewed locally.
+- PHP lint was run from LocalWP Site Shell because PHP CLI is not available in the normal macOS shell.
+- Mohamed’s section is ready for team handoff.
 
 ---
 
@@ -275,6 +289,12 @@ Branch:
 ```bash
 git checkout -b feature/homepage-ui-content
 ```
+
+Final check note:
+- Mohamed final checks completed.
+- Git is clean on `main`.
+- Product, cart, checkout, quote, and upload demo flow were reviewed locally.
+- PHP lint was run from LocalWP Site Shell because PHP CLI is not available in the normal macOS shell.
 
 ## 1. Homepage Hero
 

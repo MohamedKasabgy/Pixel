@@ -42,6 +42,7 @@ if (!defined('ABSPATH')) {
         <?php /* Actions live inside the nav so the mobile bar stays brand + toggle only (no overflow), and the CTA shows in the dropdown. */ ?>
         <div class="header-actions">
             <a class="ghost-link" href="<?php echo esc_url(wp_login_url()); ?>">Login</a>
+            <a class="ghost-link" href="<?php echo esc_url(home_url('/cart/')); ?>">Cart</a>
             <a class="btn btn-primary" href="<?php echo esc_url(home_url('/request-quote/')); ?>">Request Quote</a>
         </div>
     </nav>
