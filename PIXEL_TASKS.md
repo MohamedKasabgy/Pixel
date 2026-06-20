@@ -230,24 +230,27 @@ Known follow-up: product details page is functional, but final visual polish can
 
 Checklist:
 
-- [ ] Open WooCommerce inside WordPress admin.
-- [ ] Create WooCommerce product categories:
-  - [ ] Large Format
-  - [ ] Marketing
-  - [ ] Signage
-  - [ ] Apparel
-  - [ ] Business Cards
-- [ ] Create demo WooCommerce products.
-- [ ] Assign each product to the correct category.
-- [ ] Confirm Cart opens.
-- [ ] Confirm Checkout opens.
-- [ ] Confirm Add to Cart works for at least one product.
+- [x] Open WooCommerce inside WordPress admin.
+- [x] Create WooCommerce product categories:
+  - [x] Large Format
+  - [x] Marketing
+  - [x] Signage
+  - [x] Apparel
+  - [x] Business Cards
+- [x] Create demo WooCommerce products.
+- [x] Assign each product to the correct category.
+- [x] Confirm Cart opens.
+- [x] Confirm Checkout opens.
+- [x] Confirm Add to Cart works for at least one product.
 
 Acceptance criteria:
 
-- [ ] WooCommerce products exist.
-- [ ] WooCommerce categories exist.
-- [ ] Cart and Checkout pages work.
+- [x] WooCommerce products exist.
+- [x] WooCommerce categories exist.
+- [x] Cart and Checkout pages work.
+
+Known follow-up:
+- WooCommerce demo products and categories were created in the LocalWP database for the demo. They are not stored in Git unless we later add an import/seed file.
 
 ---
 
