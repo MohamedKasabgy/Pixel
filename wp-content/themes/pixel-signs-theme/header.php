@@ -32,6 +32,7 @@ if (!defined('ABSPATH')) {
             'items_wrap'     => '<ul>%3$s</ul>',
         ]);
         ?>
+        <a class="nav-link" href="<?php echo esc_url(home_url('/products/')); ?>">Products</a>
         <a class="nav-link" href="<?php echo esc_url(home_url('/products/?category=large-format')); ?>">Large Format</a>
         <a class="nav-link" href="<?php echo esc_url(home_url('/products/?category=marketing')); ?>">Marketing</a>
         <a class="nav-link" href="<?php echo esc_url(home_url('/products/?category=signage')); ?>">Signage</a>
