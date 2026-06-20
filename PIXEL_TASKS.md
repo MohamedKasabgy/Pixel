@@ -199,27 +199,30 @@ wp-content/themes/pixel-signs-theme/single-product.php
 
 Checklist:
 
-- [ ] Improve the product details layout.
-- [ ] Show product image.
-- [ ] Show product title.
-- [ ] Show short description.
-- [ ] Add visible product options:
-  - [ ] Size
-  - [ ] Material
-  - [ ] Finish
-  - [ ] Quantity
-  - [ ] Turnaround Time
-- [ ] Add Add to Cart button.
-- [ ] Add Request Quote button.
-- [ ] Add Upload Artwork button.
-- [ ] Test desktop layout.
-- [ ] Test mobile layout.
+- [x] Improve the product details layout.
+- [x] Show product image.
+- [x] Show product title.
+- [x] Show short description.
+- [x] Add visible product options:
+  - [x] Size
+  - [x] Material
+  - [x] Finish
+  - [x] Quantity
+  - [x] Turnaround Time
+- [x] Add Add to Cart button.
+- [x] Add Request Quote button.
+- [x] Add Upload Artwork button.
+- [x] Test desktop layout.
+- [x] Test mobile layout.
 
 Acceptance criteria:
 
-- [ ] The product page is clear.
-- [ ] Product options are visible.
-- [ ] Buttons work or go to the right pages.
+- [x] The product page is clear.
+- [x] Product options are visible.
+- [x] Buttons work or go to the right pages.
+
+Known follow-up: product details page is functional, but final visual polish can be improved later during UI polish.
+
 
 ---
 
