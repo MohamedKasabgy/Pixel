@@ -256,23 +256,29 @@ Known follow-up:
 
 ## 5. Mohamed Final Checks
 
-Before opening a Pull Request:
+Final checklist:
 
-- [ ] Run `git status`.
-- [ ] Confirm you are not on `main`.
-- [ ] Run PHP syntax check.
+- [x] Run `git status`.
+- [x] Confirm final work is merged into `main`.
+- [x] Run PHP syntax check from LocalWP Site Shell.
+- [x] Test Home.
+- [x] Test Products.
+- [x] Test every category link.
+- [x] Test Product Details.
+- [x] Confirm Cart opens.
+- [x] Confirm Checkout opens.
+- [x] Confirm Add to Cart works.
+- [x] Confirm Request Quote links work.
+- [x] Confirm Upload Artwork links work.
+- [x] Commit with a clear message.
+- [x] Push final work to `main`.
 
-```bash
-find wp-content -name "*.php" -print0 | xargs -0 -n1 php -l
-```
-
-- [ ] Test Home.
-- [ ] Test Products.
-- [ ] Test every category link.
-- [ ] Test Product Details.
-- [ ] Commit with a clear message.
-- [ ] Push the branch.
-- [ ] Open a Pull Request.
+Final check note:
+- Mohamed final checks completed.
+- Git is clean on `main`.
+- Product, cart, checkout, quote, and upload demo flow were reviewed locally.
+- PHP lint was run from LocalWP Site Shell because PHP CLI is not available in the normal macOS shell.
+- Mohamed’s section is ready for team handoff.
 
 ---
 
@@ -283,6 +289,12 @@ Branch:
 ```bash
 git checkout -b feature/homepage-ui-content
 ```
+
+Final check note:
+- Mohamed final checks completed.
+- Git is clean on `main`.
+- Product, cart, checkout, quote, and upload demo flow were reviewed locally.
+- PHP lint was run from LocalWP Site Shell because PHP CLI is not available in the normal macOS shell.
 
 ## 1. Homepage Hero
 
