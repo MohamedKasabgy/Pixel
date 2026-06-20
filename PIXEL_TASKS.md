@@ -291,15 +291,15 @@ Checklist:
 - Filtering works through the category links.
 - Checkbox click behavior can be improved later during UI polish.
 
-- [ ] Open `front-page.php`.
-- [ ] Improve the first homepage section.
-- [ ] Add a clear hero headline.
-- [ ] Add a short hero description.
-- [ ] Add Request a Quote button.
-- [ ] Add Browse Products button.
-- [ ] Add Upload Artwork button.
-- [ ] Replace the image placeholder with a real image or better visual block.
-- [ ] Make sure all CTA buttons go to the correct pages.
+- [x] Open `front-page.php`.
+- [x] Improve the first homepage section.
+- [x] Add a clear hero headline.
+- [x] Add a short hero description.
+- [x] Add Request a Quote button.
+- [x] Add Browse Products button.
+- [x] Add Upload Artwork button.
+- [x] Replace the image placeholder with a real image or better visual block.
+- [x] Make sure all CTA buttons go to the correct pages.
 
 Suggested headlines:
 
@@ -311,9 +311,9 @@ High-Quality Printing for Growing Businesses
 
 Acceptance criteria:
 
-- [ ] The homepage gives a professional first impression.
-- [ ] The client understands the business from the first section.
-- [ ] CTA buttons are clear and working.
+- [x] The homepage gives a professional first impression.
+- [x] The client understands the business from the first section.
+- [x] CTA buttons are clear and working.
 
 ---
 
@@ -321,24 +321,24 @@ Acceptance criteria:
 
 Checklist:
 
-- [ ] Add or improve the homepage categories section.
-- [ ] Add Large Format card.
-- [ ] Add Marketing card.
-- [ ] Add Signage card.
-- [ ] Add Apparel card.
-- [ ] Add Business Cards card.
-- [ ] Add Packaging card if suitable.
-- [ ] Each card includes:
-  - [ ] Image or clean placeholder
-  - [ ] Title
-  - [ ] Short description
-  - [ ] Link to the correct category
+- [x] Add or improve the homepage categories section.
+- [x] Add Large Format card.
+- [x] Add Marketing card.
+- [x] Add Signage card.
+- [x] Add Apparel card.
+- [x] Add Business Cards card.
+- [x] Add Packaging card if suitable.
+- [x] Each card includes:
+  - [x] Image or clean placeholder
+  - [x] Title
+  - [x] Short description
+  - [x] Link to the correct category
 
 Acceptance criteria:
 
-- [ ] Every card links to the correct category.
-- [ ] Cards look consistent.
-- [ ] The section is clear to the client.
+- [x] Every card links to the correct category.
+- [x] Cards look consistent.
+- [x] The section is clear to the client.
 
 ---
 
@@ -363,19 +363,19 @@ Acceptance criteria:
 
 Checklist:
 
-- [ ] Add a Why Choose Us section.
-- [ ] Add Fast turnaround.
-- [ ] Add Custom quotes.
-- [ ] Add Free file review.
-- [ ] Add Premium print quality.
-- [ ] Add Local delivery / pickup.
-- [ ] Add Bulk order support.
-- [ ] Each feature has a title and short description.
+- [x] Add a Why Choose Us section.
+- [x] Add Fast turnaround.
+- [x] Add Custom quotes.
+- [x] Add Free file review.
+- [x] Add Premium print quality.
+- [x] Add Local delivery / pickup.
+- [x] Add Bulk order support.
+- [x] Each feature has a title and short description.
 
 Acceptance criteria:
 
-- [ ] The section explains why clients should choose the company.
-- [ ] The section works on mobile.
+- [x] The section explains why clients should choose the company.
+- [x] The section works on mobile.
 
 ---
 
@@ -383,16 +383,16 @@ Acceptance criteria:
 
 Checklist:
 
-- [ ] Search for placeholder text like `Industrial press image`.
-- [ ] Replace placeholders with images or better visual blocks.
-- [ ] Make sure images do not break the layout.
-- [ ] Use images related to printing, signs, production, packaging, or marketing materials.
-- [ ] Avoid low-quality random images.
+- [x] Search for placeholder text like `Industrial press image`.
+- [x] Replace placeholders with images or better visual blocks.
+- [x] Make sure images do not break the layout.
+- [x] Use images related to printing, signs, production, packaging, or marketing materials.
+- [x] Avoid low-quality random images.
 
 Acceptance criteria:
 
-- [ ] The homepage does not show ugly gray placeholder boxes.
-- [ ] Visuals look demo-ready.
+- [x] The homepage does not show ugly gray placeholder boxes.
+- [x] Visuals look demo-ready.
 
 ---
 
@@ -426,46 +426,46 @@ Acceptance criteria:
 
 Create or improve these pages:
 
-- [ ] About
-- [ ] Contact
-- [ ] FAQ
-- [ ] Privacy Policy
-- [ ] Terms & Conditions
-- [ ] Refund Policy
-- [ ] Shipping / Delivery Policy
-- [ ] Pickup Locations
+- [x] About
+- [x] Contact
+- [x] FAQ
+- [x] Privacy Policy
+- [x] Terms & Conditions
+- [x] Refund Policy
+- [x] Shipping / Delivery Policy
+- [x] Pickup Locations
 
 Each page should include:
 
-- [ ] Clear title
-- [ ] Professional starter content
-- [ ] Simple consistent layout
-- [ ] Footer link if important
+- [x] Clear title
+- [x] Professional starter content
+- [x] Simple consistent layout
+- [x] Footer link if important
 
 Contact page should include:
 
-- [ ] Contact form
-- [ ] Email
-- [ ] Phone
-- [ ] Location
-- [ ] Working hours
-- [ ] Map placeholder
+- [x] Contact form
+- [x] Email
+- [x] Phone
+- [x] Location
+- [x] Working hours
+- [x] Map placeholder
 
 FAQ page should include:
 
-- [ ] How do I request a quote?
-- [ ] Can I upload my own design?
-- [ ] What file types do you accept?
-- [ ] How long does printing take?
-- [ ] Can I track my order?
-- [ ] Do you offer delivery?
-- [ ] Can I reorder previous prints?
+- [x] How do I request a quote?
+- [x] Can I upload my own design?
+- [x] What file types do you accept?
+- [x] How long does printing take?
+- [x] Can I track my order?
+- [x] Do you offer delivery?
+- [x] Can I reorder previous prints?
 
 Acceptance criteria:
 
-- [ ] Pages exist.
-- [ ] Pages are not empty.
-- [ ] Pages look suitable for a demo.
+- [x] Pages exist.
+- [x] Pages are not empty.
+- [x] Pages look suitable for a demo.
 
 ---
 
@@ -501,10 +501,10 @@ Before opening a Pull Request:
 find wp-content -name "*.php" -print0 | xargs -0 -n1 php -l
 ```
 
-- [ ] Test Home.
-- [ ] Test About.
-- [ ] Test Contact.
-- [ ] Test FAQ.
+- [x] Test Home.
+- [x] Test About.
+- [x] Test Contact.
+- [x] Test FAQ.
 - [ ] Test mobile view.
 - [ ] Commit with a clear message.
 - [ ] Push the branch.
