@@ -136,11 +136,12 @@ details { background: #fff; border: 1px solid var(--px-line); border-radius: 12p
 .category-visual svg { width: 30px; height: 30px; }
 .category-link { color: var(--px-accent-dark); font-weight: 700; font-size: 14px; margin-top: 4px; }
 
-/* ---- Homepage: partner / brand logos (each .partner-logo can hold a real <img>) ---- */
-.partner-logos { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 18px 44px; }
-.partner-logo { display: inline-flex; align-items: center; gap: 10px; filter: grayscale(1); opacity: .82; }
-.partner-logo-mark { width: 26px; height: 26px; color: var(--px-accent); flex: none; }
-.partner-logo-text { font-weight: 800; font-size: 18px; letter-spacing: -.01em; color: #4d5359; white-space: nowrap; }
+/* ---- Homepage: partner / brand logos (4-up grid of chips; each .partner-logo can hold a real <img>) ---- */
+.partner-logos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; max-width: 920px; margin: 0 auto; }
+.partner-logo { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 20px 16px; background: var(--px-surface); border: 1px solid var(--px-line); border-radius: 14px; filter: grayscale(1); opacity: .85; transition: opacity .15s ease, filter .15s ease, transform .15s ease; }
+.partner-logo:hover { filter: grayscale(0); opacity: 1; transform: translateY(-2px); }
+.partner-logo-mark { width: 24px; height: 24px; color: var(--px-accent); flex: none; }
+.partner-logo-text { font-weight: 800; font-size: 17px; letter-spacing: -.01em; color: #4d5359; white-space: nowrap; }
 
 /* ---- Homepage: why choose us ---- */
 .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
@@ -155,7 +156,7 @@ details { background: #fff; border: 1px solid var(--px-line); border-radius: 12p
 .contact-info { display: grid; gap: 4px; margin: 0; }
 .contact-info dt { font-weight: 700; color: var(--px-ink); margin-top: 14px; }
 .contact-info dd { margin: 2px 0 0; color: var(--px-muted); }
-.map-placeholder { height: 220px; border-radius: 14px; background: linear-gradient(135deg, #d0d2d4, #596264); display: grid; place-items: center; color: #fff; font-weight: 800; margin-top: 22px; }
+.map-placeholder { height: 220px; border-radius: 14px; background: linear-gradient(135deg, #2f332f, #596264); display: grid; place-items: center; color: #fff; font-weight: 800; margin-top: 22px; }
 .contact-form { display: grid; gap: 16px; padding: 28px; }
 .faq-list details summary { font-weight: 700; cursor: pointer; }
 .faq-list details summary::marker { color: var(--px-accent); }
@@ -172,14 +173,18 @@ details { background: #fff; border: 1px solid var(--px-line); border-radius: 12p
   .nav-toggle { display: block; margin-left: auto; }
   .primary-nav { display: none; }
   .primary-nav.open { display: flex; position: absolute; left: 0; right: 0; top: 76px; background: #fff; flex-direction: column; align-items: stretch; padding: 16px 20px; border-bottom: 1px solid var(--px-line); z-index: 30; }
-  .primary-nav.open a, .primary-nav.open li { padding: 10px 0; }
-  /* Keep the primary CTA reachable on mobile; drop only the secondary Login link. */
-  .header-actions { display: flex; }
-  .header-actions .ghost-link { display: none; }
+  .primary-nav.open ul { flex-direction: column; gap: 0; width: 100%; }
+  /* Full 44px tap targets for the stacked links (the anchor, not just the <li>, gets the height). */
+  .primary-nav.open > a, .primary-nav.open li > a { display: block; min-height: 44px; line-height: 44px; }
+  /* Actions sit at the bottom of the open dropdown so the CTA is reachable without overflowing the bar. */
+  .primary-nav.open .header-actions { width: 100%; gap: 10px; margin-top: 12px; padding-top: 14px; border-top: 1px solid var(--px-line); }
+  .primary-nav.open .header-actions .ghost-link,
+  .primary-nav.open .header-actions .btn { flex: 1; justify-content: center; text-align: center; }
   .hero, .layout-sidebar, .product-detail-layout, .portal-layout { grid-template-columns: 1fr; }
   .steps-grid, .product-grid, .portal-cards, .footer-grid { grid-template-columns: 1fr; }
   .feature-grid { grid-template-columns: 1fr; }
   .category-grid, .why-grid { grid-template-columns: repeat(2, 1fr); }
+  .partner-logos { grid-template-columns: repeat(3, 1fr); }
   .contact-grid { grid-template-columns: 1fr; }
   .portal-sidebar { border-right: 0; }
   .portal-heading, .section-heading.split, .tracking-top { flex-direction: column; align-items: start; }
@@ -195,8 +200,9 @@ details { background: #fff; border: 1px solid var(--px-line); border-radius: 12p
   .hero-actions { width: 100%; }
   .hero-actions .btn { flex: 1 1 140px; }
   .category-grid, .why-grid { grid-template-columns: 1fr; }
-  .partner-logos { gap: 16px 28px; }
-  .partner-logo-text { font-size: 16px; }
+  .partner-logos { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .partner-logo { padding: 16px 12px; }
+  .partner-logo-text { font-size: 15px; }
   .site-footer { padding: 48px 22px 22px; }
   .map-placeholder { height: 180px; }
 }
