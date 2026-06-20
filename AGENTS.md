@@ -18,6 +18,7 @@ Build a polished English-only printing website inspired by the supplied referenc
 ## Work rules
 
 - Read `PROJECT_KNOWLEDGE.md` before making architecture decisions.
+- For agent workflow setup, read the `## Agent skills` section below and the files under `docs/agents/`.
 - Prioritize visual completeness and client demo quality first.
 - Advanced integrations can be placeholders if they block MVP speed.
 - Do not store payment card data; rely on WooCommerce payment gateways.
@@ -31,3 +32,21 @@ Build a polished English-only printing website inspired by the supplied referenc
 - Customer can request quote and upload artwork.
 - Customer can place a WooCommerce order.
 - Customer can see order status from portal/tracking screen.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are tracked in GitHub Issues for `MohamedKasabgy/Pixel`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the default five-label triage vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, and `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This is a single-context repo. `PROJECT_KNOWLEDGE.md` is the source of truth for domain language, scope, visual direction, and MVP priorities. See `docs/agents/domain.md`.
+
+### Recommended skills for this repo
+
+Use the Pixel skill guide before planning or implementation work. See `docs/agents/recommended-skills.md`. Team members can install the recommended/user skills from `docs/agents/install-skills.md`.
