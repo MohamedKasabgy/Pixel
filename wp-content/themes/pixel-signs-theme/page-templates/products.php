@@ -129,6 +129,14 @@ $products = [
         'slug' => 'stickers',
     ],
     [
+        'title' => 'Labels',
+        'category' => 'marketing',
+        'description' => 'Custom product labels with durable finishes for bottles, boxes, bags, and retail packaging.',
+        'price' => '$30.00',
+        'badge' => 'Custom Shapes',
+        'slug' => 'labels',
+    ],
+    [
         'title' => 'T-Shirts',
         'category' => 'apparel',
         'description' => 'Custom printed shirts for crews, events, launches, and branded merchandise.',
@@ -159,6 +167,14 @@ $products = [
         'price' => '$28.00',
         'badge' => 'Writable Stock',
         'slug' => 'appointment-cards',
+    ],
+    [
+        'title' => 'Packaging Boxes',
+        'category' => 'marketing',
+        'description' => 'Branded folding cartons and product boxes for retail, gifts, launches, and promotions.',
+        'price' => 'Request Quote',
+        'badge' => 'Retail Ready',
+        'slug' => 'packaging-boxes',
     ],
     [
         'title' => 'Custom Quote Product',
@@ -221,7 +237,11 @@ $page_description = $supported_categories[$selected_category]['description'];
                         <span><?php echo esc_html('Request Quote' === $product['price'] ? 'Pricing' : 'Starting at'); ?></span>
                         <strong><?php echo esc_html($product['price']); ?></strong>
                     </div>
-                    <a href="<?php echo esc_url(home_url('/product/' . $product['slug'] . '/')); ?>">View Details →</a>
+                    <div class="product-actions">
+                        <a href="<?php echo esc_url(home_url('/product/' . $product['slug'] . '/')); ?>">View Details</a>
+                        <a href="<?php echo esc_url(add_query_arg('product', $product['slug'], home_url('/request-quote/'))); ?>">Request Quote</a>
+                        <a href="<?php echo esc_url(add_query_arg('product', $product['slug'], home_url('/upload-artwork/'))); ?>">Upload Artwork</a>
+                    </div>
                 </article>
             <?php endforeach; ?>
         </div>
