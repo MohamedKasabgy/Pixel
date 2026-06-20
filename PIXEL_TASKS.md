@@ -152,38 +152,40 @@ Create 10–15 demo products.
 
 Checklist:
 
-- [ ] Vinyl Banners
-- [ ] Business Cards
-- [ ] Flyers
-- [ ] Brochures
-- [ ] Posters
-- [ ] Stickers
-- [ ] Yard Signs
-- [ ] Foam Boards
-- [ ] Roll Up Banners
-- [ ] T-Shirts
-- [ ] Packaging Boxes
-- [ ] Labels
-- [ ] Menus
-- [ ] Postcards
-- [ ] Custom Quote Product
+- [x] Vinyl Banners
+- [x] Business Cards
+- [x] Flyers
+- [x] Brochures
+- [x] Posters
+- [x] Stickers
+- [x] Yard Signs
+- [x] Foam Boards
+- [x] Roll Up Banners
+- [x] T-Shirts
+- [x] Packaging Boxes
+- [x] Labels
+- [x] Menus
+- [x] Postcards
+- [x] Custom Quote Product
 
 Each product should include:
 
-- [ ] Product name
-- [ ] Category
-- [ ] Short description
-- [ ] Starting price or “Request Quote”
-- [ ] Image or visual placeholder
-- [ ] View Details button
-- [ ] Request Quote button
-- [ ] Upload Artwork button
+- [x] Product name
+- [x] Category
+- [x] Short description
+- [x] Starting price or “Request Quote”
+- [x] Image or visual placeholder
+- [x] View Details button
+- [x] Request Quote button
+- [x] Upload Artwork button
 
 Acceptance criteria:
 
-- [ ] Each category has at least 2 products.
-- [ ] Products are understandable to the client.
-- [ ] Buttons go to the correct pages.
+- [x] Each category has at least 2 products.
+- [x] Products are understandable to the client.
+- [x] Buttons go to the correct pages.
+
+Known follow-up: product card action buttons are functional but need visual styling during UI polish.
 
 ---
 
