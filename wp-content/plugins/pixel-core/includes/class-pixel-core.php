@@ -307,6 +307,7 @@ final class Pixel_Core
             'post_title'   => sprintf('Quote Request - %s - %s', $product, $name),
             'post_content' => $details,
             'post_status'  => 'publish',
+            'post_author'  => get_current_user_id(),
         ], true);
 
         if (is_wp_error($post_id)) {
@@ -640,21 +641,143 @@ final class Pixel_Core
 
     public function render_client_portal(): string
     {
+        if (!is_user_logged_in()) {
+            ob_start();
+            ?>
+            <div class="notice portal-preview-notice">
+                This is a client portal preview. <a href="<?php echo esc_url(wp_login_url(get_permalink())); ?>">Log in</a> to see your real orders, quotes, and artwork.
+            </div>
+            <div class="portal-cards">
+                <div class="portal-card"><span>Active Quotes</span><div class="metric">3</div><p>awaiting approval</p></div>
+                <div class="portal-card"><span>Orders in Production</span><div class="metric">2</div><p>estimated delivery this week</p></div>
+                <div class="portal-card"><span>Uploaded Files</span><div class="metric">4</div><p>available to your print team</p></div>
+            </div>
+            <div class="client-table-wrap">
+                <table class="client-table">
+                    <thead><tr><th>Job ID</th><th>Project Name</th><th>Status</th><th>Date Updated</th><th>Action</th></tr></thead>
+                    <tbody>
+                        <tr><td>#ORD-9021</td><td><strong>Retail Window Vinyls</strong></td><td><span class="status-pill">In Production</span></td><td>Recently</td><td><a href="<?php echo esc_url(home_url('/order-tracking/')); ?>">Track</a></td></tr>
+                        <tr><td>#QT-4402</td><td><strong>Corporate Fleet Vehicle Wraps</strong></td><td><span class="status-pill neutral">Quoted</span></td><td>Recently</td><td>Review</td></tr>
+                        <tr><td>#FILE-184</td><td><strong>Trade Show Backdrop Artwork</strong></td><td><span class="status-pill neutral">Approved</span></td><td>Recently</td><td>File</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <?php
+            return ob_get_clean();
+        }
+
+        $user = wp_get_current_user();
+        $customer_email = strtolower((string) $user->user_email);
+        $quotes = get_posts([
+            'post_type'      => 'pixel_quote',
+            'post_status'    => 'publish',
+            'posts_per_page' => 20,
+            'orderby'        => 'modified',
+            'order'          => 'DESC',
+            'meta_key'       => '_pixel_customer_email',
+            'meta_value'     => $customer_email,
+        ]);
+        $artwork_files = get_posts([
+            'post_type'      => 'pixel_artwork',
+            'post_status'    => 'publish',
+            'posts_per_page' => 20,
+            'orderby'        => 'modified',
+            'order'          => 'DESC',
+            'meta_key'       => '_pixel_upload_email',
+            'meta_value'     => $customer_email,
+        ]);
+        $orders = function_exists('wc_get_orders')
+            ? wc_get_orders([
+                'customer_id' => (int) $user->ID,
+                'limit'       => 20,
+                'orderby'     => 'date',
+                'order'       => 'DESC',
+            ])
+            : [];
+
+        $inactive_quote_statuses = ['rejected', 'converted-to-order'];
+        $active_quotes = array_filter(
+            $quotes,
+            fn(WP_Post $quote): bool => !in_array(
+                $this->normalize_quote_status((string) get_post_meta($quote->ID, '_pixel_quote_status', true)),
+                $inactive_quote_statuses,
+                true
+            )
+        );
+        $inactive_order_statuses = ['completed', 'cancelled', 'refunded', 'failed'];
+        $active_orders = array_filter(
+            $orders,
+            static fn($order): bool => is_object($order) && method_exists($order, 'get_status')
+                && !in_array($order->get_status(), $inactive_order_statuses, true)
+        );
+
+        $activity = [];
+        foreach ($orders as $order) {
+            if (!is_object($order) || !method_exists($order, 'get_id')) {
+                continue;
+            }
+
+            $modified = $order->get_date_modified() ?: $order->get_date_created();
+            $activity[] = [
+                'timestamp' => $modified ? $modified->getTimestamp() : 0,
+                'id'        => 'ORD-' . $order->get_order_number(),
+                'project'   => $this->get_order_project_name($order),
+                'status'    => function_exists('wc_get_order_status_name') ? wc_get_order_status_name($order->get_status()) : ucfirst($order->get_status()),
+                'action'    => '<a href="' . esc_url(add_query_arg('order_number', $order->get_order_number(), home_url('/order-tracking/'))) . '">Track</a>',
+            ];
+        }
+
+        foreach ($quotes as $quote) {
+            $activity[] = [
+                'timestamp' => (int) get_post_modified_time('U', true, $quote),
+                'id'        => 'QT-' . $quote->ID,
+                'project'   => (string) get_post_meta($quote->ID, '_pixel_product_type', true),
+                'status'    => $this->get_quote_status_label((string) get_post_meta($quote->ID, '_pixel_quote_status', true)),
+                'action'    => '<span>Quote</span>',
+            ];
+        }
+
+        foreach ($artwork_files as $artwork) {
+            $download_url = $this->get_artwork_download_url($artwork->ID);
+            $activity[] = [
+                'timestamp' => (int) get_post_modified_time('U', true, $artwork),
+                'id'        => 'FILE-' . $artwork->ID,
+                'project'   => (string) get_post_meta($artwork->ID, '_pixel_project_name', true),
+                'status'    => $this->get_artwork_status_label((string) get_post_meta($artwork->ID, '_pixel_artwork_status', true)),
+                'action'    => $download_url !== '' ? '<a href="' . esc_url($download_url) . '">Download</a>' : '<span>File</span>',
+            ];
+        }
+
+        usort($activity, static fn(array $first, array $second): int => $second['timestamp'] <=> $first['timestamp']);
+        $activity = array_slice($activity, 0, 10);
+
         ob_start();
         ?>
         <div class="portal-cards">
-            <div class="portal-card"><span>Active Quotes</span><div class="metric">3</div><p>awaiting approval</p></div>
-            <div class="portal-card"><span>Orders in Production</span><div class="metric">2</div><p>estimated delivery this week</p></div>
-            <div class="portal-card dark-card"><h3>Need Assistance?</h3><p>Connect with your dedicated account manager.</p></div>
+            <div class="portal-card"><span>Active Quotes</span><div class="metric"><?php echo esc_html((string) count($active_quotes)); ?></div><p>open quote requests</p></div>
+            <div class="portal-card"><span>Active Orders</span><div class="metric"><?php echo esc_html((string) count($active_orders)); ?></div><p>currently being processed</p></div>
+            <div class="portal-card"><span>Uploaded Files</span><div class="metric"><?php echo esc_html((string) count($artwork_files)); ?></div><p>available to your print team</p></div>
         </div>
-        <table class="client-table">
-            <thead><tr><th>Job ID</th><th>Project Name</th><th>Status</th><th>Date Updated</th><th>Action</th></tr></thead>
-            <tbody>
-                <tr><td>#ORD-9021</td><td><strong>Retail Window Vinyls - Summer Promo</strong></td><td><span class="status-pill">Printing</span></td><td>Today, 10:42 AM</td><td>View</td></tr>
-                <tr><td>#QT-4402</td><td><strong>Corporate Fleet Vehicle Wraps</strong></td><td><span class="status-pill neutral">Quote Ready</span></td><td>Yesterday, 3:15 PM</td><td>View</td></tr>
-                <tr><td>#ORD-8995</td><td><strong>Trade Show Booth Backdrop & Banners</strong></td><td><span class="status-pill neutral">Delivered</span></td><td>Oct 24, 2024</td><td>View</td></tr>
-            </tbody>
-        </table>
+        <div class="client-table-wrap">
+            <table class="client-table">
+                <thead><tr><th>Job ID</th><th>Project Name</th><th>Status</th><th>Date Updated</th><th>Action</th></tr></thead>
+                <tbody>
+                    <?php if ($activity === []) : ?>
+                        <tr><td colspan="5"><div class="portal-empty-state"><strong>No project activity yet.</strong><p>Request a quote or upload artwork to start your first print project.</p></div></td></tr>
+                    <?php else : ?>
+                        <?php foreach ($activity as $item) : ?>
+                            <tr>
+                                <td>#<?php echo esc_html($item['id']); ?></td>
+                                <td><strong><?php echo esc_html($item['project'] !== '' ? $item['project'] : 'Print Project'); ?></strong></td>
+                                <td><span class="status-pill neutral"><?php echo esc_html($item['status']); ?></span></td>
+                                <td><?php echo esc_html(wp_date(get_option('date_format'), $item['timestamp'])); ?></td>
+                                <td><?php echo wp_kses($item['action'], ['a' => ['href' => []], 'span' => []]); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
         <?php
         return ob_get_clean();
     }
@@ -1087,6 +1210,25 @@ final class Pixel_Core
             'rejected'           => 'Rejected',
             'converted-to-order' => 'Converted to Order',
         ];
+    }
+
+    private function get_order_project_name($order): string
+    {
+        if (!is_object($order) || !method_exists($order, 'get_items')) {
+            return 'Print Order';
+        }
+
+        $item_names = [];
+        foreach ($order->get_items() as $item) {
+            if (is_object($item) && method_exists($item, 'get_name')) {
+                $item_names[] = $item->get_name();
+            }
+            if (count($item_names) === 2) {
+                break;
+            }
+        }
+
+        return $item_names !== [] ? implode(', ', $item_names) : 'Print Order';
     }
 
     private function normalize_quote_status(string $status): string

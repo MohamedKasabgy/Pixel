@@ -100,9 +100,16 @@ details { background: #fff; border: 1px solid var(--px-line); border-radius: 12p
 .portal-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 34px; }
 .portal-card { padding: 30px; }
 .portal-card .metric { font-size: 52px; font-weight: 900; letter-spacing: -.05em; }
+.portal-preview-notice { margin-bottom: 24px; }
+.portal-preview-notice a { font-weight: 800; text-decoration: underline; }
+.client-table-wrap { max-width: 100%; overflow-x: auto; border-radius: var(--px-radius); box-shadow: var(--px-shadow); }
 .client-table { width: 100%; border-collapse: collapse; overflow: hidden; }
+.client-table-wrap .client-table { min-width: 720px; box-shadow: none; }
 .client-table th, .client-table td { text-align: left; padding: 18px 22px; border-bottom: 1px solid var(--px-line); }
 .client-table th { color: var(--px-muted); font-size: 13px; text-transform: uppercase; letter-spacing: .08em; background: #fafafa; }
+.client-table td:last-child a { color: var(--px-accent-dark); font-weight: 800; }
+.portal-empty-state { padding: 24px; text-align: center; }
+.portal-empty-state p { margin-bottom: 0; }
 .status-pill { display: inline-flex; padding: 6px 10px; border-radius: 999px; background: #f7dcc2; color: var(--px-accent-dark); font-size: 12px; font-weight: 800; }
 .search-pill input { width: 330px; }
 .tracking-card { padding: 34px; }
