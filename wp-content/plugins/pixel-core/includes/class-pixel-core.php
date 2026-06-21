@@ -118,8 +118,10 @@ final class Pixel_Core
             'wc-artwork-review' => 'Artwork Review',
             'wc-proof-needed'   => 'Proof Needed',
             'wc-in-production'  => 'In Production',
+            'wc-quality-check'  => 'Quality Check',
             'wc-ready-pickup'   => 'Ready for Pickup',
             'wc-print-shipped'  => 'Shipped',
+            'wc-out-delivery'   => 'Out for Delivery',
             'wc-print-delivered'=> 'Delivered',
         ];
 
@@ -145,8 +147,10 @@ final class Pixel_Core
                 $new['wc-artwork-review']  = 'Artwork Review';
                 $new['wc-proof-needed']    = 'Proof Needed';
                 $new['wc-in-production']   = 'In Production';
+                $new['wc-quality-check']   = 'Quality Check';
                 $new['wc-ready-pickup']    = 'Ready for Pickup';
                 $new['wc-print-shipped']   = 'Shipped';
+                $new['wc-out-delivery']    = 'Out for Delivery';
                 $new['wc-print-delivered'] = 'Delivered';
             }
         }
@@ -784,25 +788,158 @@ final class Pixel_Core
 
     public function render_order_tracker(): string
     {
+        $order_number = isset($_GET['order_number'])
+            ? sanitize_text_field(wp_unslash($_GET['order_number']))
+            : '';
+        $billing_email = is_user_logged_in() ? (string) wp_get_current_user()->user_email : '';
+        $message = '';
+        $order = null;
+        $search_attempted = $order_number !== '';
+
+        if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['pixel_tracking_nonce'])) {
+            $search_attempted = true;
+            $order_number = sanitize_text_field(wp_unslash($_POST['pixel_tracking_order'] ?? ''));
+            $billing_email = sanitize_email(wp_unslash($_POST['pixel_tracking_email'] ?? ''));
+            if ($billing_email === '' && is_user_logged_in()) {
+                $billing_email = (string) wp_get_current_user()->user_email;
+            }
+
+            if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['pixel_tracking_nonce'])), 'pixel_track_order')) {
+                $message = '<div class="notice error">Security check failed. Please refresh and try again.</div>';
+            } elseif ($order_number === '' || (!is_user_logged_in() && !is_email($billing_email))) {
+                $message = '<div class="notice error">Enter your order number and billing email.</div>';
+            }
+        }
+
+        if ($search_attempted && $message === '') {
+            if (!function_exists('wc_get_order')) {
+                $message = '<div class="notice error">Order tracking is temporarily unavailable.</div>';
+            } else {
+                $order = $this->find_woocommerce_order($order_number);
+                if (!$order || !$this->can_view_tracked_order($order, $billing_email)) {
+                    $order = null;
+                    $message = '<div class="notice error">We could not find an order matching those details.</div>';
+                }
+            }
+        }
+
         ob_start();
+        echo $message; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         ?>
-        <div class="tracking-card">
-            <div class="tracking-top">
-                <div><h2>Order #PX-8492 <span class="status-pill">In Production</span></h2><p>Placed on October 24, 2024</p></div>
-                <div><small>Estimated Delivery</small><h2>Oct 30 - Nov 1</h2></div>
+        <form class="tracking-search-form" method="post">
+            <?php wp_nonce_field('pixel_track_order', 'pixel_tracking_nonce'); ?>
+            <div>
+                <label for="pixel-tracking-order">Order Number</label>
+                <input id="pixel-tracking-order" name="pixel_tracking_order" value="<?php echo esc_attr($order_number); ?>" placeholder="e.g. 8492 or PX-8492" required>
             </div>
-            <div class="timeline">
-                <div class="timeline-step done">Order Placed<br><small>Oct 24, 09:41 AM</small></div>
-                <div class="timeline-step current">In Production<br><small>Currently printing</small></div>
-                <div class="timeline-step">Shipped<br><small>Pending</small></div>
-                <div class="timeline-step">Out for Delivery<br><small>Pending</small></div>
-                <div class="timeline-step">Delivered<br><small>Pending</small></div>
+            <div>
+                <label for="pixel-tracking-email">Billing Email</label>
+                <input id="pixel-tracking-email" type="email" name="pixel_tracking_email" value="<?php echo esc_attr($billing_email); ?>" placeholder="you@company.com" <?php echo is_user_logged_in() ? '' : 'required'; ?>>
             </div>
-        </div>
-        <div class="portal-cards two-col">
-            <div class="portal-card"><h3>Associated Files</h3><p>Large_Format_Banner_v2.pdf • Approved</p><p>Vector_Logo_Assets.ai • Approved</p></div>
-            <div class="portal-card"><h3>Shipping Details</h3><p><strong>FedEx Ground</strong><br>Tracking number not yet assigned.</p></div>
-        </div>
+            <button class="btn btn-primary" type="submit">Track Order</button>
+        </form>
+
+        <?php if ($order) : ?>
+            <?php
+            $order_status = $order->get_status();
+            $status_label = function_exists('wc_get_order_status_name')
+                ? wc_get_order_status_name($order_status)
+                : ucwords(str_replace('-', ' ', $order_status));
+            $current_step = $this->get_order_timeline_position($order_status);
+            $timeline_steps = [
+                'Order Placed',
+                'Artwork Review',
+                'Proof Approval',
+                'In Production',
+                'Quality Check',
+                'Ready for Pickup',
+                'Out for Delivery',
+                'Completed',
+            ];
+            $order_date = $order->get_date_created();
+            $shipping_address = $order->get_formatted_shipping_address();
+            if ($shipping_address === '') {
+                $shipping_address = $order->get_formatted_billing_address();
+            }
+            $tracking_number = (string) $order->get_meta('_tracking_number');
+            $tracking_provider = (string) $order->get_meta('_tracking_provider');
+            $shipping_method = (string) $order->get_shipping_method();
+            $associated_files = $this->get_order_artwork_files($order);
+            ?>
+            <div class="tracking-card">
+                <div class="tracking-top">
+                    <div>
+                        <h2>Order #<?php echo esc_html((string) $order->get_order_number()); ?> <span class="status-pill"><?php echo esc_html($status_label); ?></span></h2>
+                        <p>Placed <?php echo esc_html($order_date ? wp_date(get_option('date_format'), $order_date->getTimestamp()) : 'recently'); ?></p>
+                    </div>
+                    <div>
+                        <small>Order Total</small>
+                        <h2><?php echo wp_kses_post($order->get_formatted_order_total()); ?></h2>
+                    </div>
+                </div>
+                <div class="timeline-wrap">
+                    <div class="timeline">
+                        <?php foreach ($timeline_steps as $index => $step_label) : ?>
+                            <?php
+                            $step_class = '';
+                            if ($index < $current_step) {
+                                $step_class = 'done';
+                            } elseif ($index === $current_step) {
+                                $step_class = 'current';
+                            }
+                            ?>
+                            <div class="timeline-step <?php echo esc_attr($step_class); ?>">
+                                <?php echo esc_html($step_label); ?><br>
+                                <small><?php echo $index < $current_step ? 'Complete' : ($index === $current_step ? 'Current stage' : 'Pending'); ?></small>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+            <div class="portal-cards tracking-details-grid">
+                <div class="portal-card">
+                    <h3>Order Items</h3>
+                    <ul class="tracking-list">
+                        <?php foreach ($order->get_items() as $item) : ?>
+                            <li><span><?php echo esc_html($item->get_name()); ?></span><strong>× <?php echo esc_html((string) $item->get_quantity()); ?></strong></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+                <div class="portal-card">
+                    <h3>Associated Files</h3>
+                    <?php if ($associated_files === []) : ?>
+                        <p>No artwork files are attached to this order yet.</p>
+                    <?php else : ?>
+                        <ul class="tracking-list">
+                            <?php foreach ($associated_files as $artwork) : ?>
+                                <?php $download_url = $this->get_artwork_download_url($artwork->ID); ?>
+                                <li>
+                                    <span>
+                                        <?php if ($download_url !== '' && is_user_logged_in()) : ?>
+                                            <a href="<?php echo esc_url($download_url); ?>"><?php echo esc_html((string) get_post_meta($artwork->ID, '_pixel_original_filename', true)); ?></a>
+                                        <?php else : ?>
+                                            <?php echo esc_html((string) get_post_meta($artwork->ID, '_pixel_original_filename', true)); ?>
+                                        <?php endif; ?>
+                                    </span>
+                                    <strong><?php echo esc_html($this->get_artwork_status_label((string) get_post_meta($artwork->ID, '_pixel_artwork_status', true))); ?></strong>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
+                </div>
+                <div class="portal-card">
+                    <h3>Shipping Details</h3>
+                    <p><strong><?php echo esc_html($tracking_provider !== '' ? $tracking_provider : ($shipping_method !== '' ? $shipping_method : 'Delivery method pending')); ?></strong></p>
+                    <p><?php echo wp_kses_post($shipping_address !== '' ? $shipping_address : 'Delivery address will appear here when assigned.'); ?></p>
+                    <p><?php echo $tracking_number !== '' ? 'Tracking: ' . esc_html($tracking_number) : 'Tracking number not yet assigned.'; ?></p>
+                </div>
+            </div>
+        <?php elseif (!$search_attempted) : ?>
+            <div class="tracking-card tracking-empty">
+                <h2>Track production and delivery</h2>
+                <p>Enter the order number from your confirmation email. For privacy, guests must also provide the billing email used at checkout.</p>
+            </div>
+        <?php endif; ?>
         <?php
         return ob_get_clean();
     }
@@ -1229,6 +1366,115 @@ final class Pixel_Core
         }
 
         return $item_names !== [] ? implode(', ', $item_names) : 'Print Order';
+    }
+
+    private function find_woocommerce_order(string $order_number)
+    {
+        $normalized = trim(ltrim($order_number, '#'));
+        $order_id = 0;
+
+        if (ctype_digit($normalized)) {
+            $order_id = absint($normalized);
+        } elseif (preg_match('/(\d+)$/', $normalized, $matches)) {
+            $order_id = absint($matches[1]);
+        }
+
+        if ($order_id > 0) {
+            $order = wc_get_order($order_id);
+            if ($order) {
+                return $order;
+            }
+        }
+
+        if (!function_exists('wc_get_orders')) {
+            return null;
+        }
+
+        $orders = wc_get_orders([
+            'limit'      => 1,
+            'return'     => 'objects',
+            'meta_query' => [
+                [
+                    'key'   => '_order_number',
+                    'value' => $normalized,
+                ],
+            ],
+        ]);
+
+        return $orders[0] ?? null;
+    }
+
+    private function can_view_tracked_order($order, string $billing_email): bool
+    {
+        if (!is_object($order) || !method_exists($order, 'get_billing_email')) {
+            return false;
+        }
+
+        if (current_user_can('manage_woocommerce')) {
+            return true;
+        }
+
+        if (is_user_logged_in()) {
+            $customer_id = method_exists($order, 'get_customer_id') ? (int) $order->get_customer_id() : 0;
+            if ($customer_id > 0 && $customer_id === get_current_user_id()) {
+                return true;
+            }
+        }
+
+        $order_email = strtolower((string) $order->get_billing_email());
+        $submitted_email = strtolower(sanitize_email($billing_email));
+        return $order_email !== '' && $submitted_email !== '' && hash_equals($order_email, $submitted_email);
+    }
+
+    private function get_order_timeline_position(string $status): int
+    {
+        $positions = [
+            'pending'         => 0,
+            'on-hold'         => 0,
+            'processing'      => 1,
+            'artwork-review'  => 1,
+            'proof-needed'    => 2,
+            'in-production'   => 3,
+            'quality-check'   => 4,
+            'ready-pickup'    => 5,
+            'print-shipped'   => 6,
+            'out-delivery'    => 6,
+            'print-delivered' => 7,
+            'completed'       => 7,
+        ];
+
+        return $positions[$status] ?? 0;
+    }
+
+    private function get_order_artwork_files($order): array
+    {
+        if (!is_object($order) || !method_exists($order, 'get_order_number')) {
+            return [];
+        }
+
+        $order_number = (string) $order->get_order_number();
+        $references = array_values(array_unique([
+            $order_number,
+            'PX-' . $order_number,
+            'ORD-' . $order_number,
+            '#' . $order_number,
+        ]));
+        $meta_query = ['relation' => 'OR'];
+        foreach ($references as $reference) {
+            $meta_query[] = [
+                'key'   => '_pixel_order_number',
+                'value' => $reference,
+            ];
+        }
+
+        return get_posts([
+            'post_type'      => 'pixel_artwork',
+            'post_status'    => 'publish',
+            'posts_per_page' => 20,
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+            'meta_query'     => $meta_query,
+        ]);
     }
 
     private function normalize_quote_status(string $status): string
