@@ -3,7 +3,7 @@
  * Plugin Name: Pixel Core
  * Plugin URI: https://example.com
  * Description: Print-specific features for Pixel Signs & Printing: quote requests, artwork uploads, client portal shortcodes, print order statuses, and staff roles.
- * Version: 0.1.0
+ * Version: 0.2.0
  * Author: Pixel Signs & Printing
  * Text Domain: pixel-core
  */
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('PIXEL_CORE_VERSION', '0.1.0');
+define('PIXEL_CORE_VERSION', '0.2.0');
 define('PIXEL_CORE_PATH', plugin_dir_path(__FILE__));
 define('PIXEL_CORE_URL', plugin_dir_url(__FILE__));
 
