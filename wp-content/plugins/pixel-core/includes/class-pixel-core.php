@@ -33,6 +33,8 @@ final class Pixel_Core
         add_action('admin_menu', [$this, 'register_admin_pages']);
         add_action('add_meta_boxes', [$this, 'register_quote_meta_boxes']);
         add_action('save_post_pixel_quote', [$this, 'save_quote_meta'], 10, 2);
+        add_filter('manage_pixel_quote_posts_columns', [$this, 'register_quote_admin_columns']);
+        add_action('manage_pixel_quote_posts_custom_column', [$this, 'render_quote_admin_column'], 10, 2);
     }
 
     public static function activate(): void
@@ -148,9 +150,45 @@ final class Pixel_Core
     {
         $message = '';
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pixel_quote_nonce'])) {
+        if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['pixel_quote_nonce'])) {
             $message = $this->handle_quote_submission();
         }
+
+        $products = [
+            'business-cards'      => 'Business Cards',
+            'flyers'              => 'Flyers',
+            'brochures'           => 'Brochures',
+            'stickers'            => 'Stickers & Labels',
+            'vinyl-banners'       => 'Vinyl Banners',
+            'posters'             => 'Posters',
+            'signage'             => 'Signs & Display Graphics',
+            'vehicle-wraps'       => 'Vehicle Wraps',
+            'apparel-printing'    => 'Apparel Printing',
+            'packaging-boxes'     => 'Packaging Boxes',
+            'custom-print-project'=> 'Other / Custom Print Project',
+        ];
+        $requested_product = isset($_GET['product']) ? sanitize_key(wp_unslash($_GET['product'])) : '';
+        $selected_product  = isset($_POST['pixel_product_type'])
+            ? sanitize_key(wp_unslash($_POST['pixel_product_type']))
+            : $requested_product;
+
+        if (!isset($products[$selected_product])) {
+            $selected_product = '';
+        }
+
+        $values = [
+            'name'            => isset($_POST['pixel_name']) ? sanitize_text_field(wp_unslash($_POST['pixel_name'])) : '',
+            'email'           => isset($_POST['pixel_email']) ? sanitize_email(wp_unslash($_POST['pixel_email'])) : '',
+            'company'         => isset($_POST['pixel_company']) ? sanitize_text_field(wp_unslash($_POST['pixel_company'])) : '',
+            'phone'           => isset($_POST['pixel_phone']) ? sanitize_text_field(wp_unslash($_POST['pixel_phone'])) : '',
+            'quantity'        => isset($_POST['pixel_quantity']) ? absint($_POST['pixel_quantity']) : '',
+            'size'            => isset($_POST['pixel_size']) ? sanitize_text_field(wp_unslash($_POST['pixel_size'])) : '',
+            'material'        => isset($_POST['pixel_material']) ? sanitize_text_field(wp_unslash($_POST['pixel_material'])) : '',
+            'finish'          => isset($_POST['pixel_finish']) ? sanitize_text_field(wp_unslash($_POST['pixel_finish'])) : '',
+            'due_date'        => isset($_POST['pixel_due_date']) ? sanitize_text_field(wp_unslash($_POST['pixel_due_date'])) : '',
+            'delivery_method' => isset($_POST['pixel_delivery_method']) ? sanitize_key(wp_unslash($_POST['pixel_delivery_method'])) : '',
+            'details'         => isset($_POST['pixel_details']) ? sanitize_textarea_field(wp_unslash($_POST['pixel_details'])) : '',
+        ];
 
         ob_start();
         echo $message; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -158,28 +196,43 @@ final class Pixel_Core
         <form class="quote-form" method="post" enctype="multipart/form-data">
             <?php wp_nonce_field('pixel_quote_request', 'pixel_quote_nonce'); ?>
             <div class="form-grid">
-                <label>Full Name<input name="pixel_name" required></label>
-                <label>Email<input type="email" name="pixel_email" required></label>
+                <label>Full Name<input name="pixel_name" value="<?php echo esc_attr((string) $values['name']); ?>" autocomplete="name" required></label>
+                <label>Email<input type="email" name="pixel_email" value="<?php echo esc_attr((string) $values['email']); ?>" autocomplete="email" required></label>
             </div>
             <div class="form-grid">
-                <label>Company<input name="pixel_company"></label>
-                <label>Phone<input name="pixel_phone"></label>
+                <label>Company Name<input name="pixel_company" value="<?php echo esc_attr((string) $values['company']); ?>" autocomplete="organization"></label>
+                <label>Phone<input type="tel" name="pixel_phone" value="<?php echo esc_attr((string) $values['phone']); ?>" autocomplete="tel" required></label>
             </div>
             <label>Product Type
                 <select name="pixel_product_type" required>
-                    <option value="Business Cards">Business Cards</option>
-                    <option value="Large Format Banner">Large Format Banner</option>
-                    <option value="Acrylic Sign">Acrylic Sign</option>
-                    <option value="Vehicle Wrap">Vehicle Wrap</option>
-                    <option value="Apparel Printing">Apparel Printing</option>
-                    <option value="Other">Other</option>
+                    <option value="">Select a product</option>
+                    <?php foreach ($products as $product_key => $product_label) : ?>
+                        <option value="<?php echo esc_attr($product_key); ?>" <?php selected($selected_product, $product_key); ?>>
+                            <?php echo esc_html($product_label); ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </label>
             <div class="form-grid">
-                <label>Quantity<input type="number" min="1" name="pixel_quantity" required></label>
-                <label>Needed By<input type="date" name="pixel_due_date"></label>
+                <label>Quantity<input type="number" min="1" name="pixel_quantity" value="<?php echo esc_attr((string) $values['quantity']); ?>" required></label>
+                <label>Size<input name="pixel_size" value="<?php echo esc_attr((string) $values['size']); ?>" placeholder="e.g. 24 × 36 in or custom"></label>
             </div>
-            <label>Project Details<textarea name="pixel_details" placeholder="Size, material, finish, delivery notes, and any special requirements."></textarea></label>
+            <div class="form-grid">
+                <label>Material<input name="pixel_material" value="<?php echo esc_attr((string) $values['material']); ?>" placeholder="e.g. Vinyl, cardstock, acrylic"></label>
+                <label>Finish<input name="pixel_finish" value="<?php echo esc_attr((string) $values['finish']); ?>" placeholder="e.g. Matte, gloss, laminated"></label>
+            </div>
+            <div class="form-grid">
+                <label>Deadline<input type="date" name="pixel_due_date" value="<?php echo esc_attr((string) $values['due_date']); ?>"></label>
+                <label>Delivery Method
+                    <select name="pixel_delivery_method">
+                        <option value="">Select a method</option>
+                        <option value="standard-shipping" <?php selected($values['delivery_method'], 'standard-shipping'); ?>>Standard Shipping</option>
+                        <option value="express-shipping" <?php selected($values['delivery_method'], 'express-shipping'); ?>>Express Shipping</option>
+                        <option value="local-pickup" <?php selected($values['delivery_method'], 'local-pickup'); ?>>Local Pickup</option>
+                    </select>
+                </label>
+            </div>
+            <label>Project Notes<textarea name="pixel_details" placeholder="Describe the project, intended use, delivery notes, and any special requirements."><?php echo esc_textarea((string) $values['details']); ?></textarea></label>
             <label>Artwork / Reference File<input type="file" name="pixel_artwork" accept=".pdf,.ai,.eps,.psd,.jpg,.jpeg,.png,.tif,.tiff,.zip"></label>
             <button class="btn btn-primary" type="submit">Submit Quote Request</button>
         </form>
@@ -193,17 +246,51 @@ final class Pixel_Core
             return '<div class="notice error">Security check failed. Please refresh and try again.</div>';
         }
 
-        $name    = sanitize_text_field(wp_unslash($_POST['pixel_name'] ?? ''));
-        $email   = sanitize_email(wp_unslash($_POST['pixel_email'] ?? ''));
-        $company = sanitize_text_field(wp_unslash($_POST['pixel_company'] ?? ''));
-        $product = sanitize_text_field(wp_unslash($_POST['pixel_product_type'] ?? ''));
-        $details = sanitize_textarea_field(wp_unslash($_POST['pixel_details'] ?? ''));
-        $qty     = absint($_POST['pixel_quantity'] ?? 0);
+        $products = [
+            'business-cards'       => 'Business Cards',
+            'flyers'               => 'Flyers',
+            'brochures'            => 'Brochures',
+            'stickers'             => 'Stickers & Labels',
+            'vinyl-banners'        => 'Vinyl Banners',
+            'posters'              => 'Posters',
+            'signage'              => 'Signs & Display Graphics',
+            'vehicle-wraps'        => 'Vehicle Wraps',
+            'apparel-printing'     => 'Apparel Printing',
+            'packaging-boxes'      => 'Packaging Boxes',
+            'custom-print-project' => 'Other / Custom Print Project',
+        ];
+        $delivery_methods = [
+            'standard-shipping' => 'Standard Shipping',
+            'express-shipping'  => 'Express Shipping',
+            'local-pickup'      => 'Local Pickup',
+        ];
 
-        if ($name === '' || $email === '' || $product === '' || $qty < 1) {
+        $name             = sanitize_text_field(wp_unslash($_POST['pixel_name'] ?? ''));
+        $email            = sanitize_email(wp_unslash($_POST['pixel_email'] ?? ''));
+        $company          = sanitize_text_field(wp_unslash($_POST['pixel_company'] ?? ''));
+        $phone            = sanitize_text_field(wp_unslash($_POST['pixel_phone'] ?? ''));
+        $product_key      = sanitize_key(wp_unslash($_POST['pixel_product_type'] ?? ''));
+        $size             = sanitize_text_field(wp_unslash($_POST['pixel_size'] ?? ''));
+        $material         = sanitize_text_field(wp_unslash($_POST['pixel_material'] ?? ''));
+        $finish           = sanitize_text_field(wp_unslash($_POST['pixel_finish'] ?? ''));
+        $due_date         = sanitize_text_field(wp_unslash($_POST['pixel_due_date'] ?? ''));
+        $delivery_key     = sanitize_key(wp_unslash($_POST['pixel_delivery_method'] ?? ''));
+        $details          = sanitize_textarea_field(wp_unslash($_POST['pixel_details'] ?? ''));
+        $qty              = absint($_POST['pixel_quantity'] ?? 0);
+
+        if ($name === '' || !is_email($email) || $phone === '' || !isset($products[$product_key]) || $qty < 1) {
             return '<div class="notice error">Please complete the required fields.</div>';
         }
 
+        if ($due_date !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $due_date)) {
+            return '<div class="notice error">Please enter a valid project deadline.</div>';
+        }
+
+        if ($delivery_key !== '' && !isset($delivery_methods[$delivery_key])) {
+            return '<div class="notice error">Please select a valid delivery method.</div>';
+        }
+
+        $product = $products[$product_key];
         $post_id = wp_insert_post([
             'post_type'    => 'pixel_quote',
             'post_title'   => sprintf('Quote Request - %s - %s', $product, $name),
@@ -218,8 +305,15 @@ final class Pixel_Core
         update_post_meta($post_id, '_pixel_customer_name', $name);
         update_post_meta($post_id, '_pixel_customer_email', $email);
         update_post_meta($post_id, '_pixel_customer_company', $company);
+        update_post_meta($post_id, '_pixel_customer_phone', $phone);
+        update_post_meta($post_id, '_pixel_product_key', $product_key);
         update_post_meta($post_id, '_pixel_product_type', $product);
         update_post_meta($post_id, '_pixel_quantity', $qty);
+        update_post_meta($post_id, '_pixel_size', $size);
+        update_post_meta($post_id, '_pixel_material', $material);
+        update_post_meta($post_id, '_pixel_finish', $finish);
+        update_post_meta($post_id, '_pixel_due_date', $due_date);
+        update_post_meta($post_id, '_pixel_delivery_method', $delivery_key !== '' ? $delivery_methods[$delivery_key] : '');
         update_post_meta($post_id, '_pixel_quote_status', 'New');
 
         $this->maybe_handle_upload($post_id, 'quote');
@@ -386,8 +480,14 @@ final class Pixel_Core
             '_pixel_customer_name'    => 'Customer Name',
             '_pixel_customer_email'   => 'Customer Email',
             '_pixel_customer_company' => 'Company',
+            '_pixel_customer_phone'   => 'Phone',
             '_pixel_product_type'     => 'Product Type',
             '_pixel_quantity'         => 'Quantity',
+            '_pixel_size'             => 'Size',
+            '_pixel_material'         => 'Material',
+            '_pixel_finish'           => 'Finish',
+            '_pixel_due_date'         => 'Deadline',
+            '_pixel_delivery_method'  => 'Delivery Method',
             '_pixel_quote_status'     => 'Quote Status',
         ];
 
@@ -418,11 +518,61 @@ final class Pixel_Core
             return;
         }
 
-        $fields = ['_pixel_customer_name', '_pixel_customer_email', '_pixel_customer_company', '_pixel_product_type', '_pixel_quantity', '_pixel_quote_status'];
+        $fields = [
+            '_pixel_customer_name',
+            '_pixel_customer_email',
+            '_pixel_customer_company',
+            '_pixel_customer_phone',
+            '_pixel_product_type',
+            '_pixel_quantity',
+            '_pixel_size',
+            '_pixel_material',
+            '_pixel_finish',
+            '_pixel_due_date',
+            '_pixel_delivery_method',
+            '_pixel_quote_status',
+        ];
         foreach ($fields as $field) {
             if (isset($_POST[$field])) {
                 update_post_meta($post_id, $field, sanitize_text_field(wp_unslash($_POST[$field])));
             }
+        }
+    }
+
+    public function register_quote_admin_columns(array $columns): array
+    {
+        return [
+            'cb'             => $columns['cb'] ?? '<input type="checkbox">',
+            'title'          => 'Quote Request',
+            'pixel_customer' => 'Customer',
+            'pixel_product'  => 'Product',
+            'pixel_quantity' => 'Quantity',
+            'pixel_status'   => 'Status',
+            'date'           => $columns['date'] ?? 'Date',
+        ];
+    }
+
+    public function render_quote_admin_column(string $column, int $post_id): void
+    {
+        if ($column === 'pixel_customer') {
+            $name  = get_post_meta($post_id, '_pixel_customer_name', true);
+            $email = get_post_meta($post_id, '_pixel_customer_email', true);
+            echo esc_html((string) $name);
+            if ($email !== '') {
+                echo '<br><a href="mailto:' . esc_attr((string) $email) . '">' . esc_html((string) $email) . '</a>';
+            }
+            return;
+        }
+
+        $meta_keys = [
+            'pixel_product'  => '_pixel_product_type',
+            'pixel_quantity' => '_pixel_quantity',
+            'pixel_status'   => '_pixel_quote_status',
+        ];
+
+        if (isset($meta_keys[$column])) {
+            $value = get_post_meta($post_id, $meta_keys[$column], true);
+            echo $value !== '' ? esc_html((string) $value) : '&mdash;';
         }
     }
 }
