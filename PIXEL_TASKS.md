@@ -515,9 +515,9 @@ Responsive QA result (Playwright, 2026-06-22): Home, About, Contact, and FAQ pas
 
 Before opening a Pull Request:
 
-- [ ] Run `git status`.
-- [ ] Confirm you are not on `main`.
-- [ ] Run PHP syntax check.
+- [x] Run `git status`.
+- [x] Confirm you are not on `main`. *(Verified on `feature/abdullah-responsive-qa`.)*
+- [x] Run PHP syntax check. *(LocalWP PHP lint passed for 23 files.)*
 
 ```bash
 find wp-content -name "*.php" -print0 | xargs -0 -n1 php -l
@@ -528,9 +528,9 @@ find wp-content -name "*.php" -print0 | xargs -0 -n1 php -l
 - [x] Test Contact.
 - [x] Test FAQ.
 - [x] Test mobile view. *(Playwright responsive QA 2026-06-22 — pass.)*
-- [ ] Commit with a clear message.
-- [ ] Push the branch.
-- [ ] Open a Pull Request.
+- [x] Commit with a clear message. *(928aad0 `docs: record Abdullah responsive QA completion`.)*
+- [x] Push the branch. *(`feature/abdullah-responsive-qa` pushed to origin.)*
+- [x] Open a Pull Request. *(Opened manually on GitHub because GitHub CLI was not installed.)*
 
 ---
 
