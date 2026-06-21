@@ -366,16 +366,16 @@ Acceptance criteria:
 
 Checklist:
 
-- [ ] Add a partners or brands section to the homepage.
-- [ ] Add a heading such as `Trusted by growing businesses`.
-- [ ] Add 5–8 logo placeholders.
-- [ ] Make the logos look organized and professional.
-- [ ] Make the section responsive.
+- [x] Add a partners or brands section to the homepage.
+- [x] Add a heading such as `Trusted by growing businesses`.
+- [x] Add 5–8 logo placeholders.
+- [x] Make the logos look organized and professional.
+- [x] Make the section responsive.
 
 Acceptance criteria:
 
-- [ ] The section builds trust.
-- [ ] The design is clean and professional.
+- [x] The section builds trust.
+- [x] The design is clean and professional.
 
 ---
 
@@ -420,25 +420,25 @@ Acceptance criteria:
 
 Checklist:
 
-- [ ] Improve the header if needed.
-- [ ] Make sure header links are clear.
-- [ ] Make sure the header works on mobile.
-- [ ] Improve the footer.
-- [ ] Add footer links:
-  - [ ] Products
-  - [ ] Request Quote
-  - [ ] Upload Artwork
-  - [ ] Contact
-  - [ ] FAQ
-  - [ ] Privacy Policy
-  - [ ] Terms
-- [ ] Add placeholder contact information.
+- [x] Improve the header if needed.
+- [x] Make sure header links are clear.
+- [x] Make sure the header works on mobile.
+- [x] Improve the footer.
+- [x] Add footer links:
+  - [x] Products
+  - [x] Request Quote
+  - [x] Upload Artwork
+  - [x] Contact
+  - [x] FAQ
+  - [x] Privacy Policy
+  - [x] Terms
+- [x] Add placeholder contact information.
 
 Acceptance criteria:
 
-- [ ] Header and footer are consistent.
-- [ ] Main links exist.
-- [ ] Mobile layout does not break.
+- [x] Header and footer are consistent.
+- [x] Main links exist.
+- [x] Mobile layout does not break.
 
 ---
 
@@ -493,19 +493,21 @@ Acceptance criteria:
 
 Checklist:
 
-- [ ] Test homepage on desktop.
-- [ ] Test homepage on tablet.
-- [ ] Test homepage on mobile.
-- [ ] Make cards stack properly on mobile.
-- [ ] Make sure text does not overflow.
-- [ ] Make buttons easy to tap.
-- [ ] Make sure the header does not cover content.
+- [x] Test homepage on desktop. *(Playwright 1280x900 — pass.)*
+- [x] Test homepage on tablet. *(Playwright 768x1024 — pass.)*
+- [x] Test homepage on mobile. *(Playwright 375x812 — pass.)*
+- [x] Make cards stack properly on mobile.
+- [x] Make sure text does not overflow.
+- [x] Make buttons easy to tap.
+- [x] Make sure the header does not cover content.
 
 Acceptance criteria:
 
-- [ ] The site looks acceptable on mobile.
-- [ ] There is no obvious horizontal overflow.
-- [ ] Buttons and links are usable.
+- [x] The site looks acceptable on mobile.
+- [x] There is no obvious horizontal overflow.
+- [x] Buttons and links are usable.
+
+Responsive QA result (Playwright, 2026-06-22): Home, About, Contact, and FAQ pass at desktop (1280x900), tablet (768x1024), and mobile (375x812) — `scrollWidth - innerWidth <= 0` on every page/viewport, with no card/text/footer clipping. The mobile nav opens/closes and exposes Login, Cart, and Request Quote; the partners grid is 4-up/3-up/2-up. Legal/support pages (`/privacy/`, `/terms/`, `/refund-policy/`, `/shipping-policy/`, `/pickup-locations/`) render and are not 404. The eight Abdullah static pages were created in the LocalWP database (IDs 15-22) with their templates assigned — a DB-only change; no repo code was modified. Screenshots saved under `.playwright-mcp/` remain untracked. Optional cosmetic note (not a blocker): the Home hero `.quality-badge` overhangs the mobile viewport left edge by ~8px without causing horizontal scroll. Legal/contact placeholder copy and real image/logo replacement remain launch follow-ups; the Packaging card stays linked to `/products/` until Mohamed adds the real filter.
 
 ---
 
@@ -525,7 +527,7 @@ find wp-content -name "*.php" -print0 | xargs -0 -n1 php -l
 - [x] Test About.
 - [x] Test Contact.
 - [x] Test FAQ.
-- [ ] Test mobile view.
+- [x] Test mobile view. *(Playwright responsive QA 2026-06-22 — pass.)*
 - [ ] Commit with a clear message.
 - [ ] Push the branch.
 - [ ] Open a Pull Request.

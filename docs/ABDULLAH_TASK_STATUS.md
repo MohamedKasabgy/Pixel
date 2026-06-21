@@ -19,16 +19,16 @@ Tracks Abdullah's assigned scope only:
 | --- | --- | --- | --- |
 | Homepage hero | [x] | [x] | Verified on homepage (headline + 3 CTAs render). |
 | Product categories | [x] | [x] | Verified. Packaging links to `/products/` until Mohamed adds the real filter. |
-| Partners / brands | [x] | [ ] | Reorganized to a 4-up chip grid (was 6+2); pending visual re-check. |
+| Partners / brands | [x] | [x] | Verified. Reorganized to a 4-up chip grid (was 6+2). |
 | Why Choose Us | [x] | [x] | Verified. |
 | Visual placeholders | [x] | [x] | Verified. Launch follow-up: replace with approved real images/logos. |
-| Header + footer | [x] | [ ] | Mobile bar overflow fixed (actions moved into the dropdown); pending mobile re-check. |
-| Content pages | [x] | [x] | 8 WordPress pages created (IDs 12-19) + templates assigned; rendering verified. |
-| Responsive design | [x] | [ ] | Header overflow root cause fixed; pending mobile/tablet visual QA. |
+| Header + footer | [x] | [x] | Verified. Mobile bar overflow fixed (actions moved into the dropdown). |
+| Content pages | [x] | [x] | 8 WordPress pages created in LocalWP DB (IDs 15-22) + templates assigned; rendering verified (not 404). |
+| Responsive design | [x] | [x] | Verified desktop/tablet/mobile via Playwright (no horizontal overflow on Home/About/Contact/FAQ). |
 
 **Code completion:** about 95%.
 
-**Verified completion:** about 80%.
+**Verified completion:** about 98%.
 
 ## Task Checklist
 
@@ -77,7 +77,7 @@ Tracks Abdullah's assigned scope only:
 ### 3. Partners / Brands Section
 
 - [x] **Implemented**
-- [ ] **Verified in LocalWP**
+- [x] **Verified in LocalWP**
 
 **Task explanation:** Add a trust section with a heading such as `Trusted by growing businesses` and professional placeholder logo marks.
 
@@ -132,7 +132,7 @@ Tracks Abdullah's assigned scope only:
 ### 6. Header + Footer Polish
 
 - [x] **Implemented**
-- [ ] **Verified in LocalWP**
+- [x] **Verified in LocalWP**
 
 **Task explanation:** Improve the header/footer links, make the mobile header usable, and include important footer links for products, quotes, uploads, contact, FAQ, legal pages, shipping, refund, and pickup locations.
 
@@ -166,7 +166,9 @@ Tracks Abdullah's assigned scope only:
 
 **Task explanation:** Create or improve About, Contact, FAQ, Privacy Policy, Terms & Conditions, Refund Policy, Shipping / Delivery Policy, and Pickup Locations pages.
 
-**How it was completed:** Eight page templates were created under `wp-content/themes/pixel-signs-theme/page-templates/` with professional starter content, then the matching WordPress pages were created and assigned their templates (page IDs 12-19). Each template was rendered through a real WordPress query and confirmed to output its baked content.
+**How it was completed:** Eight page templates were created under `wp-content/themes/pixel-signs-theme/page-templates/` with professional starter content, then the matching WordPress pages were created in the LocalWP database and assigned their templates (page IDs 15-22, published). Each page was loaded through a real WordPress request and confirmed to render its baked content (no longer 404).
+
+**Responsive QA note (2026-06-22):** During the responsive pass these eight slugs initially returned 404 because no published Pages existed in this LocalWP database (only the theme templates existed). The eight Pages were (re)created in the LocalWP DB with their templates assigned (IDs 15-22). `/about/`, `/contact/`, and `/faq/` then passed full responsive QA; `/privacy/`, `/terms/`, `/refund-policy/`, `/shipping-policy/`, and `/pickup-locations/` were spot-checked and render (not 404). This was a LocalWP database change only — no repo/theme code was modified. Starter legal/contact placeholder copy stays a launch/client-review follow-up.
 
 - `about.php` -> `/about/`
 - `contact.php` -> `/contact/`
@@ -206,13 +208,23 @@ wp post create --post_type=page --post_title="Pickup Locations" --post_name="pic
 ### 8. Responsive Design
 
 - [x] **Implemented in CSS**
-- [ ] **Verified on desktop**
-- [ ] **Verified on tablet**
-- [ ] **Verified on mobile**
+- [x] **Verified on desktop** (1280x900)
+- [x] **Verified on tablet** (768x1024)
+- [x] **Verified on mobile** (375x812)
 
 **Task explanation:** Make the homepage, cards, header, footer, and content pages work on desktop, tablet, and mobile without overflow or broken layout.
 
 **How it was completed:** `assets/css/main.css` received responsive styles, a smaller breakpoint, mobile stacking rules, touch-target improvements, and horizontal overflow guards. The reported mobile issue (content running off-frame / needing a sideways swipe) was traced to the header action button overflowing the bar; it is fixed by moving the actions into the nav dropdown so the mobile bar holds only brand + toggle.
+
+**Responsive QA results (Playwright, 2026-06-22):**
+
+- **Desktop (1280x900), Tablet (768x1024), Mobile (375x812): PASS.** The overflow check `documentElement.scrollWidth - innerWidth <= 0` held on every page/viewport (measured -15 each), with zero elements overflowing the viewport.
+- **Pages tested:** Home, `/about/`, `/contact/`, `/faq/` — overflow, card/text/footer clipping, and (mobile) the nav all clean.
+- **Mobile nav:** opens and closes correctly; Login, Cart, and Request Quote are reachable in the open dropdown.
+- **Partners grid:** 4-up desktop / 3-up tablet / 2-up mobile, as intended.
+- **Legal/support pages** (`/privacy/`, `/terms/`, `/refund-policy/`, `/shipping-policy/`, `/pickup-locations/`): render and are not 404.
+- **Screenshots:** saved under `.playwright-mcp/` as evidence; this directory stays untracked (not committed).
+- **Optional cosmetic note (not a blocker):** on mobile the Home hero `.quality-badge` overhangs the viewport's left edge by ~8px. It does not create horizontal scroll and Home passes all checks; flagged as optional polish only.
 
 **How to verify:**
 
@@ -231,9 +243,10 @@ wp post create --post_type=page --post_title="Pickup Locations" --post_name="pic
 
 - [x] Create the eight WordPress content pages and assign their templates.
 - [ ] Bypass or disable WooCommerce Coming Soon mode for full anonymous visual QA.
-- [ ] Verify desktop layout in LocalWP.
-- [ ] Verify tablet layout in LocalWP.
-- [ ] Re-verify mobile layout in LocalWP (header overflow fix + partners 4-up grid).
-- [ ] Review starter legal/policy content before launch.
+- [x] Verify desktop layout in LocalWP. *(Verified via Playwright QA 2026-06-22.)*
+- [x] Verify tablet layout in LocalWP. *(Verified via Playwright QA 2026-06-22.)*
+- [x] Re-verify mobile layout in LocalWP (header overflow fix + partners 4-up grid). *(Verified via tasks 3 & 6 and Playwright QA 2026-06-22.)*
+- [ ] Review starter legal/contact placeholder content before launch (launch/client-review follow-up).
 - [ ] Replace CSS/SVG visual slots with approved real images/logos before final launch.
 - [ ] Keep Packaging card linked to `/products/` until Mohamed adds a real Packaging filter.
+- [ ] Optional cosmetic polish: tighten the Home hero `.quality-badge` ~8px left overhang on mobile (no horizontal scroll; not a blocker).
