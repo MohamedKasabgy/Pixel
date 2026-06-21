@@ -35,6 +35,8 @@ final class Pixel_Core
         add_action('save_post_pixel_quote', [$this, 'save_quote_meta'], 10, 2);
         add_filter('manage_pixel_quote_posts_columns', [$this, 'register_quote_admin_columns']);
         add_action('manage_pixel_quote_posts_custom_column', [$this, 'render_quote_admin_column'], 10, 2);
+        add_action('restrict_manage_posts', [$this, 'render_quote_status_filter']);
+        add_action('pre_get_posts', [$this, 'filter_quotes_by_status']);
     }
 
     public static function activate(): void
@@ -314,7 +316,7 @@ final class Pixel_Core
         update_post_meta($post_id, '_pixel_finish', $finish);
         update_post_meta($post_id, '_pixel_due_date', $due_date);
         update_post_meta($post_id, '_pixel_delivery_method', $delivery_key !== '' ? $delivery_methods[$delivery_key] : '');
-        update_post_meta($post_id, '_pixel_quote_status', 'New');
+        update_post_meta($post_id, '_pixel_quote_status', 'new');
 
         $this->maybe_handle_upload($post_id, 'quote');
 
@@ -488,7 +490,6 @@ final class Pixel_Core
             '_pixel_finish'           => 'Finish',
             '_pixel_due_date'         => 'Deadline',
             '_pixel_delivery_method'  => 'Delivery Method',
-            '_pixel_quote_status'     => 'Quote Status',
         ];
 
         echo '<table class="form-table">';
@@ -501,6 +502,18 @@ final class Pixel_Core
                 esc_attr((string) $value)
             );
         }
+
+        $current_status = $this->normalize_quote_status((string) get_post_meta($post->ID, '_pixel_quote_status', true));
+        echo '<tr><th><label for="_pixel_quote_status">Quote Status</label></th><td><select id="_pixel_quote_status" name="_pixel_quote_status">';
+        foreach ($this->get_quote_statuses() as $status_key => $status_label) {
+            printf(
+                '<option value="%1$s" %2$s>%3$s</option>',
+                esc_attr($status_key),
+                selected($current_status, $status_key, false),
+                esc_html($status_label)
+            );
+        }
+        echo '</select></td></tr>';
         echo '</table>';
     }
 
@@ -530,11 +543,17 @@ final class Pixel_Core
             '_pixel_finish',
             '_pixel_due_date',
             '_pixel_delivery_method',
-            '_pixel_quote_status',
         ];
         foreach ($fields as $field) {
             if (isset($_POST[$field])) {
                 update_post_meta($post_id, $field, sanitize_text_field(wp_unslash($_POST[$field])));
+            }
+        }
+
+        if (isset($_POST['_pixel_quote_status'])) {
+            $status = $this->normalize_quote_status((string) wp_unslash($_POST['_pixel_quote_status']));
+            if (isset($this->get_quote_statuses()[$status])) {
+                update_post_meta($post_id, '_pixel_quote_status', $status);
             }
         }
     }
@@ -572,7 +591,73 @@ final class Pixel_Core
 
         if (isset($meta_keys[$column])) {
             $value = get_post_meta($post_id, $meta_keys[$column], true);
+            if ($column === 'pixel_status') {
+                $value = $this->get_quote_status_label((string) $value);
+            }
             echo $value !== '' ? esc_html((string) $value) : '&mdash;';
         }
+    }
+
+    public function render_quote_status_filter(string $post_type): void
+    {
+        if ($post_type !== 'pixel_quote') {
+            return;
+        }
+
+        $selected_status = isset($_GET['pixel_quote_status'])
+            ? sanitize_title((string) wp_unslash($_GET['pixel_quote_status']))
+            : '';
+
+        echo '<select name="pixel_quote_status">';
+        echo '<option value="">All quote statuses</option>';
+        foreach ($this->get_quote_statuses() as $status_key => $status_label) {
+            printf(
+                '<option value="%1$s" %2$s>%3$s</option>',
+                esc_attr($status_key),
+                selected($selected_status, $status_key, false),
+                esc_html($status_label)
+            );
+        }
+        echo '</select>';
+    }
+
+    public function filter_quotes_by_status(WP_Query $query): void
+    {
+        if (!is_admin() || !$query->is_main_query() || $query->get('post_type') !== 'pixel_quote') {
+            return;
+        }
+
+        $status = isset($_GET['pixel_quote_status'])
+            ? sanitize_title((string) wp_unslash($_GET['pixel_quote_status']))
+            : '';
+
+        if ($status !== '' && isset($this->get_quote_statuses()[$status])) {
+            $query->set('meta_key', '_pixel_quote_status');
+            $query->set('meta_value', $status);
+        }
+    }
+
+    private function get_quote_statuses(): array
+    {
+        return [
+            'new'                => 'New',
+            'under-review'       => 'Under Review',
+            'quoted'             => 'Quoted',
+            'approved'           => 'Approved',
+            'rejected'           => 'Rejected',
+            'converted-to-order' => 'Converted to Order',
+        ];
+    }
+
+    private function normalize_quote_status(string $status): string
+    {
+        $normalized = sanitize_title($status);
+        return isset($this->get_quote_statuses()[$normalized]) ? $normalized : 'new';
+    }
+
+    private function get_quote_status_label(string $status): string
+    {
+        $normalized = $this->normalize_quote_status($status);
+        return $this->get_quote_statuses()[$normalized];
     }
 }
