@@ -235,7 +235,10 @@ final class Pixel_Core
                 </label>
             </div>
             <label>Project Notes<textarea name="pixel_details" placeholder="Describe the project, intended use, delivery notes, and any special requirements."><?php echo esc_textarea((string) $values['details']); ?></textarea></label>
-            <label>Artwork / Reference File<input type="file" name="pixel_artwork" accept=".pdf,.ai,.eps,.psd,.jpg,.jpeg,.png,.tif,.tiff,.zip"></label>
+            <label>Artwork / Reference File
+                <input type="file" name="pixel_artwork" accept=".pdf,.ai,.eps,.psd,.jpg,.jpeg,.png,.tif,.tiff,.zip" data-max-size="<?php echo esc_attr((string) $this->get_max_artwork_upload_size()); ?>">
+                <small>Optional. Maximum file size: <?php echo esc_html(size_format($this->get_max_artwork_upload_size())); ?>.</small>
+            </label>
             <button class="btn btn-primary" type="submit">Submit Quote Request</button>
         </form>
         <?php
@@ -318,7 +321,13 @@ final class Pixel_Core
         update_post_meta($post_id, '_pixel_delivery_method', $delivery_key !== '' ? $delivery_methods[$delivery_key] : '');
         update_post_meta($post_id, '_pixel_quote_status', 'new');
 
-        $this->maybe_handle_upload($post_id, 'quote');
+        $upload_result = $this->maybe_handle_upload($post_id, 'quote');
+        if (is_wp_error($upload_result)) {
+            update_post_meta($post_id, '_pixel_upload_error', $upload_result->get_error_message());
+            return '<div class="notice">Quote request submitted, but the optional file could not be uploaded: '
+                . esc_html($upload_result->get_error_message())
+                . '. You can send it from the Upload Artwork page.</div>';
+        }
 
         return '<div class="notice">Quote request submitted. Our team will review your project and contact you soon.</div>';
     }
@@ -327,9 +336,20 @@ final class Pixel_Core
     {
         $message = '';
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pixel_upload_nonce'])) {
+        if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['pixel_upload_nonce'])) {
             $message = $this->handle_artwork_upload();
         }
+
+        $requested_project = isset($_GET['product'])
+            ? sanitize_text_field(str_replace('-', ' ', (string) wp_unslash($_GET['product'])))
+            : '';
+        $values = [
+            'name'         => isset($_POST['pixel_upload_name']) ? sanitize_text_field(wp_unslash($_POST['pixel_upload_name'])) : '',
+            'email'        => isset($_POST['pixel_upload_email']) ? sanitize_email(wp_unslash($_POST['pixel_upload_email'])) : '',
+            'order_number' => isset($_POST['pixel_order_number']) ? sanitize_text_field(wp_unslash($_POST['pixel_order_number'])) : '',
+            'project'      => isset($_POST['pixel_project_name']) ? sanitize_text_field(wp_unslash($_POST['pixel_project_name'])) : ucwords($requested_project),
+            'notes'        => isset($_POST['pixel_upload_notes']) ? sanitize_textarea_field(wp_unslash($_POST['pixel_upload_notes'])) : '',
+        ];
 
         ob_start();
         echo $message; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -337,11 +357,18 @@ final class Pixel_Core
         <form class="upload-form" method="post" enctype="multipart/form-data">
             <?php wp_nonce_field('pixel_artwork_upload', 'pixel_upload_nonce'); ?>
             <div class="form-grid">
-                <label>Order / Quote Number<input name="pixel_order_number" placeholder="PX-8492 or QT-4402" required></label>
-                <label>Email<input type="email" name="pixel_upload_email" required></label>
+                <label>Full Name<input name="pixel_upload_name" value="<?php echo esc_attr((string) $values['name']); ?>" autocomplete="name" required></label>
+                <label>Email<input type="email" name="pixel_upload_email" value="<?php echo esc_attr((string) $values['email']); ?>" autocomplete="email" required></label>
             </div>
-            <label>Notes<textarea name="pixel_upload_notes" placeholder="Tell us what this file is for."></textarea></label>
-            <label>Artwork File<input type="file" name="pixel_artwork" accept=".pdf,.ai,.eps,.psd,.jpg,.jpeg,.png,.tif,.tiff,.zip" required></label>
+            <div class="form-grid">
+                <label>Order / Quote Number<input name="pixel_order_number" value="<?php echo esc_attr((string) $values['order_number']); ?>" placeholder="PX-8492 or QT-4402" required></label>
+                <label>Product / Project Name<input name="pixel_project_name" value="<?php echo esc_attr((string) $values['project']); ?>" placeholder="e.g. Summer storefront banner" required></label>
+            </div>
+            <label>Notes<textarea name="pixel_upload_notes" placeholder="Tell us what this file is for and include any production instructions."><?php echo esc_textarea((string) $values['notes']); ?></textarea></label>
+            <label>Artwork File
+                <input type="file" name="pixel_artwork" accept=".pdf,.ai,.eps,.psd,.jpg,.jpeg,.png,.tif,.tiff,.zip" data-max-size="<?php echo esc_attr((string) $this->get_max_artwork_upload_size()); ?>" required>
+                <small>PDF, PNG, JPG, TIFF, AI, PSD, EPS, or ZIP. Maximum file size: <?php echo esc_html(size_format($this->get_max_artwork_upload_size())); ?>.</small>
+            </label>
             <button class="btn btn-primary" type="submit">Upload Artwork</button>
         </form>
         <?php
@@ -354,57 +381,209 @@ final class Pixel_Core
             return '<div class="notice error">Security check failed. Please refresh and try again.</div>';
         }
 
+        $name         = sanitize_text_field(wp_unslash($_POST['pixel_upload_name'] ?? ''));
         $order_number = sanitize_text_field(wp_unslash($_POST['pixel_order_number'] ?? ''));
+        $project_name = sanitize_text_field(wp_unslash($_POST['pixel_project_name'] ?? ''));
         $email        = sanitize_email(wp_unslash($_POST['pixel_upload_email'] ?? ''));
         $notes        = sanitize_textarea_field(wp_unslash($_POST['pixel_upload_notes'] ?? ''));
 
-        if ($order_number === '' || $email === '') {
-            return '<div class="notice error">Please enter your order number and email.</div>';
+        if ($name === '' || $order_number === '' || $project_name === '' || !is_email($email)) {
+            return '<div class="notice error">Please complete the required upload details.</div>';
+        }
+
+        $file_validation = $this->validate_artwork_upload($_FILES['pixel_artwork'] ?? null, true);
+        if (is_wp_error($file_validation)) {
+            return '<div class="notice error">' . esc_html($file_validation->get_error_message()) . '</div>';
         }
 
         $post_id = wp_insert_post([
             'post_type'    => 'pixel_artwork',
-            'post_title'   => sprintf('Artwork Upload - %s', $order_number),
+            'post_title'   => sprintf('Artwork Upload - %s - %s', $order_number, $project_name),
             'post_content' => $notes,
             'post_status'  => 'publish',
+            'post_author'  => get_current_user_id(),
         ], true);
 
         if (is_wp_error($post_id)) {
             return '<div class="notice error">Could not create upload record. Please try again.</div>';
         }
 
+        update_post_meta($post_id, '_pixel_upload_name', $name);
         update_post_meta($post_id, '_pixel_order_number', $order_number);
+        update_post_meta($post_id, '_pixel_project_name', $project_name);
         update_post_meta($post_id, '_pixel_upload_email', $email);
-        $this->maybe_handle_upload($post_id, 'artwork');
+        update_post_meta($post_id, '_pixel_artwork_status', 'uploaded');
+
+        $upload_result = $this->maybe_handle_upload($post_id, 'artwork', true);
+        if (is_wp_error($upload_result)) {
+            wp_delete_post($post_id, true);
+            return '<div class="notice error">' . esc_html($upload_result->get_error_message()) . '</div>';
+        }
 
         return '<div class="notice">Artwork uploaded. Our pre-press team will review the file.</div>';
     }
 
-    private function maybe_handle_upload(int $post_id, string $context): void
+    private function maybe_handle_upload(int $post_id, string $context, bool $required = false)
     {
-        if (empty($_FILES['pixel_artwork']['name'])) {
-            return;
+        $validation = $this->validate_artwork_upload($_FILES['pixel_artwork'] ?? null, $required);
+        if (is_wp_error($validation)) {
+            return $validation;
         }
 
-        $allowed = ['pdf', 'ai', 'eps', 'psd', 'jpg', 'jpeg', 'png', 'tif', 'tiff', 'zip'];
-        $filename = sanitize_file_name((string) $_FILES['pixel_artwork']['name']);
-        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-
-        if (!in_array($ext, $allowed, true)) {
-            update_post_meta($post_id, '_pixel_upload_error', 'Unsupported file type.');
-            return;
+        if ($validation === false) {
+            return 0;
         }
 
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/media.php';
         require_once ABSPATH . 'wp-admin/includes/image.php';
 
-        $attachment_id = media_handle_upload('pixel_artwork', $post_id);
+        $attachment_id = media_handle_upload(
+            'pixel_artwork',
+            $post_id,
+            [],
+            [
+                'test_form' => false,
+                'mimes'     => $this->get_allowed_artwork_mimes(),
+            ]
+        );
 
-        if (!is_wp_error($attachment_id)) {
-            update_post_meta($post_id, '_pixel_artwork_attachment_id', $attachment_id);
-            update_post_meta($post_id, '_pixel_upload_context', $context);
+        if (is_wp_error($attachment_id)) {
+            return new WP_Error('pixel_upload_failed', 'The artwork file could not be stored: ' . $attachment_id->get_error_message());
         }
+
+        update_post_meta($post_id, '_pixel_artwork_attachment_id', $attachment_id);
+        update_post_meta($post_id, '_pixel_upload_context', $context);
+        update_post_meta($post_id, '_pixel_original_filename', sanitize_file_name((string) $_FILES['pixel_artwork']['name']));
+
+        return $attachment_id;
+    }
+
+    private function validate_artwork_upload($file, bool $required = false)
+    {
+        if (!is_array($file) || empty($file['name'])) {
+            return $required ? new WP_Error('pixel_file_required', 'Please select an artwork file.') : false;
+        }
+
+        $upload_error = isset($file['error']) ? (int) $file['error'] : UPLOAD_ERR_NO_FILE;
+        if ($upload_error !== UPLOAD_ERR_OK) {
+            $messages = [
+                UPLOAD_ERR_INI_SIZE   => 'The file exceeds the server upload limit.',
+                UPLOAD_ERR_FORM_SIZE  => 'The file exceeds the allowed upload limit.',
+                UPLOAD_ERR_PARTIAL    => 'The file upload was interrupted. Please try again.',
+                UPLOAD_ERR_NO_FILE    => 'Please select an artwork file.',
+                UPLOAD_ERR_NO_TMP_DIR => 'The server is missing a temporary upload directory.',
+                UPLOAD_ERR_CANT_WRITE => 'The server could not write the uploaded file.',
+                UPLOAD_ERR_EXTENSION  => 'A server extension stopped the upload.',
+            ];
+            return new WP_Error('pixel_upload_error', $messages[$upload_error] ?? 'The file upload failed.');
+        }
+
+        $size = isset($file['size']) ? (int) $file['size'] : 0;
+        if ($size < 1) {
+            return new WP_Error('pixel_empty_file', 'The selected artwork file is empty.');
+        }
+
+        if ($size > $this->get_max_artwork_upload_size()) {
+            return new WP_Error(
+                'pixel_file_too_large',
+                sprintf('The artwork file must be smaller than %s.', size_format($this->get_max_artwork_upload_size()))
+            );
+        }
+
+        $filename = sanitize_file_name((string) $file['name']);
+        $extension = strtolower((string) pathinfo($filename, PATHINFO_EXTENSION));
+        $allowed_extensions = ['pdf', 'ai', 'eps', 'psd', 'jpg', 'jpeg', 'png', 'tif', 'tiff', 'zip'];
+
+        if (!in_array($extension, $allowed_extensions, true)) {
+            return new WP_Error('pixel_unsupported_file', 'Unsupported file type. Upload PDF, PNG, JPG, TIFF, AI, PSD, EPS, or ZIP.');
+        }
+
+        if (!empty($file['tmp_name']) && in_array($extension, ['pdf', 'jpg', 'jpeg', 'png', 'tif', 'tiff', 'zip'], true)) {
+            $checked = wp_check_filetype_and_ext((string) $file['tmp_name'], $filename, $this->get_allowed_artwork_mimes());
+            if (empty($checked['ext']) || empty($checked['type'])) {
+                return new WP_Error('pixel_invalid_file', 'The file contents do not match the selected artwork format.');
+            }
+        }
+
+        if ($extension === 'zip') {
+            $zip_validation = $this->validate_artwork_zip((string) ($file['tmp_name'] ?? ''));
+            if (is_wp_error($zip_validation)) {
+                return $zip_validation;
+            }
+        }
+
+        return true;
+    }
+
+    private function validate_artwork_zip(string $path)
+    {
+        if ($path === '' || !class_exists('ZipArchive')) {
+            return true;
+        }
+
+        $archive = new ZipArchive();
+        if ($archive->open($path) !== true) {
+            return new WP_Error('pixel_invalid_zip', 'The ZIP archive could not be opened.');
+        }
+
+        $blocked_extensions = ['php', 'phtml', 'phar', 'cgi', 'pl', 'py', 'sh', 'bash', 'exe', 'com', 'bat', 'cmd', 'js', 'html', 'htm'];
+        $total_uncompressed = 0;
+        $max_entries = 500;
+        $max_uncompressed = 500 * MB_IN_BYTES;
+
+        if ($archive->numFiles > $max_entries) {
+            $archive->close();
+            return new WP_Error('pixel_zip_too_many_files', 'The ZIP archive contains too many files.');
+        }
+
+        for ($index = 0; $index < $archive->numFiles; $index++) {
+            $entry = $archive->statIndex($index);
+            if (!is_array($entry)) {
+                continue;
+            }
+
+            $entry_name = (string) ($entry['name'] ?? '');
+            $entry_extension = strtolower((string) pathinfo($entry_name, PATHINFO_EXTENSION));
+            $total_uncompressed += (int) ($entry['size'] ?? 0);
+
+            if (str_contains($entry_name, '../') || str_starts_with($entry_name, '/')) {
+                $archive->close();
+                return new WP_Error('pixel_unsafe_zip_path', 'The ZIP archive contains an unsafe file path.');
+            }
+
+            if (in_array($entry_extension, $blocked_extensions, true)) {
+                $archive->close();
+                return new WP_Error('pixel_unsafe_zip_file', 'The ZIP archive contains a blocked executable or web file.');
+            }
+
+            if ($total_uncompressed > $max_uncompressed) {
+                $archive->close();
+                return new WP_Error('pixel_zip_too_large', 'The ZIP archive expands beyond the allowed size.');
+            }
+        }
+
+        $archive->close();
+        return true;
+    }
+
+    private function get_allowed_artwork_mimes(): array
+    {
+        return [
+            'pdf'      => 'application/pdf',
+            'ai|eps'   => 'application/postscript',
+            'psd'      => 'image/vnd.adobe.photoshop',
+            'jpg|jpeg' => 'image/jpeg',
+            'png'      => 'image/png',
+            'tif|tiff' => 'image/tiff',
+            'zip'      => 'application/zip',
+        ];
+    }
+
+    private function get_max_artwork_upload_size(): int
+    {
+        $plugin_limit = (int) apply_filters('pixel_max_artwork_upload_size', 100 * MB_IN_BYTES);
+        return max(1, min($plugin_limit, (int) wp_max_upload_size()));
     }
 
     public function render_client_portal(): string
