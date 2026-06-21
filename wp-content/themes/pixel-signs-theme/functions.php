@@ -32,14 +32,14 @@ function pixel_signs_enqueue_assets(): void
         'pixel-signs-main',
         get_template_directory_uri() . '/assets/css/main.css',
         [],
-        '0.1.0'
+        '0.2.0'
     );
 
     wp_enqueue_script(
         'pixel-signs-main',
         get_template_directory_uri() . '/assets/js/main.js',
         [],
-        '0.1.0',
+        '0.2.0',
         true
     );
 }
