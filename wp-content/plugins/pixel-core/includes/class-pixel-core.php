@@ -32,11 +32,17 @@ final class Pixel_Core
         add_shortcode('pixel_order_tracker', [$this, 'render_order_tracker']);
         add_action('admin_menu', [$this, 'register_admin_pages']);
         add_action('add_meta_boxes', [$this, 'register_quote_meta_boxes']);
+        add_action('add_meta_boxes', [$this, 'register_artwork_meta_boxes']);
         add_action('save_post_pixel_quote', [$this, 'save_quote_meta'], 10, 2);
+        add_action('save_post_pixel_artwork', [$this, 'save_artwork_meta'], 10, 2);
         add_filter('manage_pixel_quote_posts_columns', [$this, 'register_quote_admin_columns']);
         add_action('manage_pixel_quote_posts_custom_column', [$this, 'render_quote_admin_column'], 10, 2);
+        add_filter('manage_pixel_artwork_posts_columns', [$this, 'register_artwork_admin_columns']);
+        add_action('manage_pixel_artwork_posts_custom_column', [$this, 'render_artwork_admin_column'], 10, 2);
         add_action('restrict_manage_posts', [$this, 'render_quote_status_filter']);
         add_action('pre_get_posts', [$this, 'filter_quotes_by_status']);
+        add_action('admin_post_pixel_download_artwork', [$this, 'handle_artwork_download']);
+        add_action('before_delete_post', [$this, 'delete_private_artwork_file']);
     }
 
     public static function activate(): void
@@ -435,26 +441,66 @@ final class Pixel_Core
         }
 
         require_once ABSPATH . 'wp-admin/includes/file.php';
-        require_once ABSPATH . 'wp-admin/includes/media.php';
-        require_once ABSPATH . 'wp-admin/includes/image.php';
-
-        $attachment_id = media_handle_upload(
-            'pixel_artwork',
-            $post_id,
-            [],
+        $uploaded_file = wp_handle_upload(
+            $_FILES['pixel_artwork'],
             [
                 'test_form' => false,
                 'mimes'     => $this->get_allowed_artwork_mimes(),
             ]
         );
 
+        if (isset($uploaded_file['error'])) {
+            return new WP_Error('pixel_upload_failed', 'The artwork file could not be stored: ' . $uploaded_file['error']);
+        }
+
+        $public_path = (string) ($uploaded_file['file'] ?? '');
+        $private_directory = $this->get_private_artwork_directory();
+        if ($public_path === '' || !wp_mkdir_p($private_directory)) {
+            if ($public_path !== '' && is_file($public_path)) {
+                wp_delete_file($public_path);
+            }
+            return new WP_Error('pixel_private_storage_failed', 'The private artwork storage directory is unavailable.');
+        }
+
+        $private_filename = wp_unique_filename($private_directory, sanitize_file_name((string) $_FILES['pixel_artwork']['name']));
+        $private_path = trailingslashit($private_directory) . $private_filename;
+        $moved = @rename($public_path, $private_path); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+
+        if (!$moved) {
+            $moved = copy($public_path, $private_path);
+            if ($moved) {
+                wp_delete_file($public_path);
+            }
+        }
+
+        if (!$moved) {
+            wp_delete_file($public_path);
+            return new WP_Error('pixel_private_storage_failed', 'The artwork file could not be moved into private storage.');
+        }
+
+        $attachment_id = wp_insert_attachment(
+            [
+                'post_mime_type' => sanitize_mime_type((string) ($uploaded_file['type'] ?? 'application/octet-stream')),
+                'post_title'     => sanitize_text_field((string) pathinfo($private_filename, PATHINFO_FILENAME)),
+                'post_content'   => '',
+                'post_status'    => 'inherit',
+            ],
+            false,
+            $post_id,
+            true
+        );
+
         if (is_wp_error($attachment_id)) {
-            return new WP_Error('pixel_upload_failed', 'The artwork file could not be stored: ' . $attachment_id->get_error_message());
+            wp_delete_file($private_path);
+            return new WP_Error('pixel_attachment_failed', 'The artwork record could not be created.');
         }
 
         update_post_meta($post_id, '_pixel_artwork_attachment_id', $attachment_id);
         update_post_meta($post_id, '_pixel_upload_context', $context);
-        update_post_meta($post_id, '_pixel_original_filename', sanitize_file_name((string) $_FILES['pixel_artwork']['name']));
+        update_post_meta($post_id, '_pixel_original_filename', $private_filename);
+        update_post_meta($post_id, '_pixel_private_file_path', $private_path);
+        update_post_meta($post_id, '_pixel_artwork_mime_type', sanitize_mime_type((string) ($uploaded_file['type'] ?? 'application/octet-stream')));
+        update_post_meta($attachment_id, '_pixel_private_file_path', $private_path);
 
         return $attachment_id;
     }
@@ -586,6 +632,12 @@ final class Pixel_Core
         return max(1, min($plugin_limit, (int) wp_max_upload_size()));
     }
 
+    private function get_private_artwork_directory(): string
+    {
+        $default_directory = trailingslashit(dirname(untrailingslashit(ABSPATH))) . 'pixel-private-uploads';
+        return (string) apply_filters('pixel_private_artwork_directory', $default_directory);
+    }
+
     public function render_client_portal(): string
     {
         ob_start();
@@ -649,6 +701,198 @@ final class Pixel_Core
         echo '<div class="wrap"><h1>Pixel Reports</h1><p>Placeholder analytics dashboard for total revenue, pending quotes, active orders, new files, urgent tasks, and weekly trends.</p></div>';
     }
 
+    public function register_artwork_meta_boxes(): void
+    {
+        add_meta_box('pixel_artwork_details', 'Artwork Details', [$this, 'render_artwork_meta_box'], 'pixel_artwork', 'normal', 'high');
+    }
+
+    public function render_artwork_meta_box(WP_Post $post): void
+    {
+        wp_nonce_field('pixel_save_artwork_meta', 'pixel_artwork_meta_nonce');
+        $fields = [
+            '_pixel_upload_name'  => ['label' => 'Customer Name', 'type' => 'text'],
+            '_pixel_upload_email' => ['label' => 'Customer Email', 'type' => 'email'],
+            '_pixel_order_number' => ['label' => 'Order / Quote Number', 'type' => 'text'],
+            '_pixel_project_name' => ['label' => 'Project Name', 'type' => 'text'],
+        ];
+
+        echo '<table class="form-table">';
+        foreach ($fields as $key => $field) {
+            $value = get_post_meta($post->ID, $key, true);
+            printf(
+                '<tr><th><label for="%1$s">%2$s</label></th><td><input class="regular-text" type="%3$s" id="%1$s" name="%1$s" value="%4$s"></td></tr>',
+                esc_attr($key),
+                esc_html($field['label']),
+                esc_attr($field['type']),
+                esc_attr((string) $value)
+            );
+        }
+
+        $current_status = $this->normalize_artwork_status((string) get_post_meta($post->ID, '_pixel_artwork_status', true));
+        echo '<tr><th><label for="_pixel_artwork_status">Review Status</label></th><td><select id="_pixel_artwork_status" name="_pixel_artwork_status">';
+        foreach ($this->get_artwork_statuses() as $status_key => $status_label) {
+            printf(
+                '<option value="%1$s" %2$s>%3$s</option>',
+                esc_attr($status_key),
+                selected($current_status, $status_key, false),
+                esc_html($status_label)
+            );
+        }
+        echo '</select></td></tr>';
+
+        $download_url = $this->get_artwork_download_url($post->ID);
+        echo '<tr><th>Artwork File</th><td>';
+        if ($download_url !== '') {
+            printf(
+                '<a class="button button-secondary" href="%1$s">Download %2$s</a>',
+                esc_url($download_url),
+                esc_html((string) get_post_meta($post->ID, '_pixel_original_filename', true))
+            );
+        } else {
+            echo '<em>No file is attached.</em>';
+        }
+        echo '</td></tr>';
+        echo '</table>';
+    }
+
+    public function save_artwork_meta(int $post_id, WP_Post $post): void
+    {
+        if (!isset($_POST['pixel_artwork_meta_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['pixel_artwork_meta_nonce'])), 'pixel_save_artwork_meta')) {
+            return;
+        }
+
+        if ((defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) || !current_user_can('edit_post', $post_id)) {
+            return;
+        }
+
+        $text_fields = ['_pixel_upload_name', '_pixel_order_number', '_pixel_project_name'];
+        foreach ($text_fields as $field) {
+            if (isset($_POST[$field])) {
+                update_post_meta($post_id, $field, sanitize_text_field(wp_unslash($_POST[$field])));
+            }
+        }
+
+        if (isset($_POST['_pixel_upload_email'])) {
+            $email = sanitize_email(wp_unslash($_POST['_pixel_upload_email']));
+            if (is_email($email)) {
+                update_post_meta($post_id, '_pixel_upload_email', $email);
+            }
+        }
+
+        if (isset($_POST['_pixel_artwork_status'])) {
+            $status = sanitize_title((string) wp_unslash($_POST['_pixel_artwork_status']));
+            if (isset($this->get_artwork_statuses()[$status])) {
+                update_post_meta($post_id, '_pixel_artwork_status', $status);
+            }
+        }
+    }
+
+    public function register_artwork_admin_columns(array $columns): array
+    {
+        return [
+            'cb'              => $columns['cb'] ?? '<input type="checkbox">',
+            'title'           => 'Artwork Record',
+            'pixel_customer'  => 'Customer',
+            'pixel_reference' => 'Order / Quote',
+            'pixel_project'   => 'Project',
+            'pixel_file'      => 'File',
+            'pixel_status'    => 'Status',
+            'date'            => $columns['date'] ?? 'Date',
+        ];
+    }
+
+    public function render_artwork_admin_column(string $column, int $post_id): void
+    {
+        if ($column === 'pixel_customer') {
+            $name = get_post_meta($post_id, '_pixel_upload_name', true);
+            $email = get_post_meta($post_id, '_pixel_upload_email', true);
+            echo $name !== '' ? esc_html((string) $name) : '&mdash;';
+            if ($email !== '') {
+                echo '<br><a href="mailto:' . esc_attr((string) $email) . '">' . esc_html((string) $email) . '</a>';
+            }
+            return;
+        }
+
+        if ($column === 'pixel_file') {
+            $download_url = $this->get_artwork_download_url($post_id);
+            $filename = get_post_meta($post_id, '_pixel_original_filename', true);
+            if ($download_url !== '') {
+                echo '<a href="' . esc_url($download_url) . '">' . esc_html((string) $filename) . '</a>';
+            } else {
+                echo '&mdash;';
+            }
+            return;
+        }
+
+        $values = [
+            'pixel_reference' => get_post_meta($post_id, '_pixel_order_number', true),
+            'pixel_project'   => get_post_meta($post_id, '_pixel_project_name', true),
+            'pixel_status'    => $this->get_artwork_status_label((string) get_post_meta($post_id, '_pixel_artwork_status', true)),
+        ];
+
+        if (isset($values[$column])) {
+            echo $values[$column] !== '' ? esc_html((string) $values[$column]) : '&mdash;';
+        }
+    }
+
+    public function handle_artwork_download(): void
+    {
+        $post_id = isset($_GET['artwork_id']) ? absint($_GET['artwork_id']) : 0;
+        $nonce = isset($_GET['_wpnonce']) ? sanitize_text_field(wp_unslash($_GET['_wpnonce'])) : '';
+
+        if ($post_id < 1 || !wp_verify_nonce($nonce, 'pixel_download_artwork_' . $post_id)) {
+            wp_die('Invalid artwork download request.', 'Artwork Download', ['response' => 403]);
+        }
+
+        if (!$this->current_user_can_access_artwork($post_id)) {
+            wp_die('You do not have permission to download this artwork.', 'Artwork Download', ['response' => 403]);
+        }
+
+        $file_path = (string) get_post_meta($post_id, '_pixel_private_file_path', true);
+        $private_directory = realpath($this->get_private_artwork_directory());
+        $real_file_path = $file_path !== '' ? realpath($file_path) : false;
+
+        if ($private_directory === false || $real_file_path === false || !str_starts_with($real_file_path, trailingslashit($private_directory)) || !is_file($real_file_path)) {
+            wp_die('The artwork file is no longer available.', 'Artwork Download', ['response' => 404]);
+        }
+
+        $filename = sanitize_file_name((string) get_post_meta($post_id, '_pixel_original_filename', true));
+        $mime_type = sanitize_mime_type((string) get_post_meta($post_id, '_pixel_artwork_mime_type', true));
+        if ($filename === '') {
+            $filename = basename($real_file_path);
+        }
+        if ($mime_type === '') {
+            $mime_type = 'application/octet-stream';
+        }
+
+        nocache_headers();
+        header('Content-Type: ' . $mime_type);
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . (string) filesize($real_file_path));
+        header('X-Content-Type-Options: nosniff');
+        readfile($real_file_path); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile
+        exit;
+    }
+
+    public function delete_private_artwork_file(int $post_id): void
+    {
+        if (!in_array(get_post_type($post_id), ['pixel_artwork', 'pixel_quote', 'attachment'], true)) {
+            return;
+        }
+
+        $file_path = (string) get_post_meta($post_id, '_pixel_private_file_path', true);
+        if ($file_path !== '' && is_file($file_path)) {
+            wp_delete_file($file_path);
+        }
+
+        if (get_post_type($post_id) !== 'attachment') {
+            $attachment_id = (int) get_post_meta($post_id, '_pixel_artwork_attachment_id', true);
+            if ($attachment_id > 0 && get_post_type($attachment_id) === 'attachment') {
+                wp_delete_attachment($attachment_id, true);
+            }
+        }
+    }
+
     public function register_quote_meta_boxes(): void
     {
         add_meta_box('pixel_quote_details', 'Quote Details', [$this, 'render_quote_meta_box'], 'pixel_quote', 'normal', 'high');
@@ -693,6 +937,15 @@ final class Pixel_Core
             );
         }
         echo '</select></td></tr>';
+
+        $download_url = $this->get_artwork_download_url($post->ID);
+        if ($download_url !== '') {
+            printf(
+                '<tr><th>Reference File</th><td><a class="button button-secondary" href="%1$s">Download %2$s</a></td></tr>',
+                esc_url($download_url),
+                esc_html((string) get_post_meta($post->ID, '_pixel_original_filename', true))
+            );
+        }
         echo '</table>';
     }
 
@@ -779,17 +1032,20 @@ final class Pixel_Core
 
     public function render_quote_status_filter(string $post_type): void
     {
-        if ($post_type !== 'pixel_quote') {
+        if (!in_array($post_type, ['pixel_quote', 'pixel_artwork'], true)) {
             return;
         }
 
-        $selected_status = isset($_GET['pixel_quote_status'])
-            ? sanitize_title((string) wp_unslash($_GET['pixel_quote_status']))
+        $is_quote = $post_type === 'pixel_quote';
+        $query_key = $is_quote ? 'pixel_quote_status' : 'pixel_artwork_status';
+        $statuses = $is_quote ? $this->get_quote_statuses() : $this->get_artwork_statuses();
+        $selected_status = isset($_GET[$query_key])
+            ? sanitize_title((string) wp_unslash($_GET[$query_key]))
             : '';
 
-        echo '<select name="pixel_quote_status">';
-        echo '<option value="">All quote statuses</option>';
-        foreach ($this->get_quote_statuses() as $status_key => $status_label) {
+        echo '<select name="' . esc_attr($query_key) . '">';
+        echo '<option value="">All ' . ($is_quote ? 'quote' : 'artwork') . ' statuses</option>';
+        foreach ($statuses as $status_key => $status_label) {
             printf(
                 '<option value="%1$s" %2$s>%3$s</option>',
                 esc_attr($status_key),
@@ -802,16 +1058,21 @@ final class Pixel_Core
 
     public function filter_quotes_by_status(WP_Query $query): void
     {
-        if (!is_admin() || !$query->is_main_query() || $query->get('post_type') !== 'pixel_quote') {
+        $post_type = $query->get('post_type');
+        if (!is_admin() || !$query->is_main_query() || !in_array($post_type, ['pixel_quote', 'pixel_artwork'], true)) {
             return;
         }
 
-        $status = isset($_GET['pixel_quote_status'])
-            ? sanitize_title((string) wp_unslash($_GET['pixel_quote_status']))
+        $is_quote = $post_type === 'pixel_quote';
+        $query_key = $is_quote ? 'pixel_quote_status' : 'pixel_artwork_status';
+        $meta_key = $is_quote ? '_pixel_quote_status' : '_pixel_artwork_status';
+        $statuses = $is_quote ? $this->get_quote_statuses() : $this->get_artwork_statuses();
+        $status = isset($_GET[$query_key])
+            ? sanitize_title((string) wp_unslash($_GET[$query_key]))
             : '';
 
-        if ($status !== '' && isset($this->get_quote_statuses()[$status])) {
-            $query->set('meta_key', '_pixel_quote_status');
+        if ($status !== '' && isset($statuses[$status])) {
+            $query->set('meta_key', $meta_key);
             $query->set('meta_value', $status);
         }
     }
@@ -838,5 +1099,72 @@ final class Pixel_Core
     {
         $normalized = $this->normalize_quote_status($status);
         return $this->get_quote_statuses()[$normalized];
+    }
+
+    private function get_artwork_statuses(): array
+    {
+        return [
+            'uploaded'       => 'Uploaded',
+            'under-review'   => 'Under Review',
+            'approved'       => 'Approved',
+            'needs-revision' => 'Needs Revision',
+            'rejected'       => 'Rejected',
+        ];
+    }
+
+    private function normalize_artwork_status(string $status): string
+    {
+        $normalized = sanitize_title($status);
+        return isset($this->get_artwork_statuses()[$normalized]) ? $normalized : 'uploaded';
+    }
+
+    private function get_artwork_status_label(string $status): string
+    {
+        $normalized = $this->normalize_artwork_status($status);
+        return $this->get_artwork_statuses()[$normalized];
+    }
+
+    private function get_artwork_download_url(int $post_id): string
+    {
+        $file_path = (string) get_post_meta($post_id, '_pixel_private_file_path', true);
+        if ($file_path === '' || !is_file($file_path)) {
+            return '';
+        }
+
+        return wp_nonce_url(
+            add_query_arg(
+                [
+                    'action'     => 'pixel_download_artwork',
+                    'artwork_id' => $post_id,
+                ],
+                admin_url('admin-post.php')
+            ),
+            'pixel_download_artwork_' . $post_id
+        );
+    }
+
+    private function current_user_can_access_artwork(int $post_id): bool
+    {
+        if (!in_array(get_post_type($post_id), ['pixel_artwork', 'pixel_quote'], true)) {
+            return false;
+        }
+
+        if (current_user_can('edit_post', $post_id)) {
+            return true;
+        }
+
+        if (!is_user_logged_in()) {
+            return false;
+        }
+
+        $user = wp_get_current_user();
+        $author_id = (int) get_post_field('post_author', $post_id);
+        if ($author_id > 0 && $author_id === (int) $user->ID) {
+            return true;
+        }
+
+        $email_meta_key = get_post_type($post_id) === 'pixel_quote' ? '_pixel_customer_email' : '_pixel_upload_email';
+        $record_email = strtolower((string) get_post_meta($post_id, $email_meta_key, true));
+        return $record_email !== '' && hash_equals($record_email, strtolower((string) $user->user_email));
     }
 }
