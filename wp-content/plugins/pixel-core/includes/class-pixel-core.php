@@ -672,24 +672,18 @@ final class Pixel_Core
 
         $user = wp_get_current_user();
         $customer_email = strtolower((string) $user->user_email);
-        $quotes = get_posts([
-            'post_type'      => 'pixel_quote',
-            'post_status'    => 'publish',
-            'posts_per_page' => 20,
-            'orderby'        => 'modified',
-            'order'          => 'DESC',
-            'meta_key'       => '_pixel_customer_email',
-            'meta_value'     => $customer_email,
-        ]);
-        $artwork_files = get_posts([
-            'post_type'      => 'pixel_artwork',
-            'post_status'    => 'publish',
-            'posts_per_page' => 20,
-            'orderby'        => 'modified',
-            'order'          => 'DESC',
-            'meta_key'       => '_pixel_upload_email',
-            'meta_value'     => $customer_email,
-        ]);
+        $quotes = $this->get_customer_records(
+            'pixel_quote',
+            '_pixel_customer_email',
+            (int) $user->ID,
+            $customer_email
+        );
+        $artwork_files = $this->get_customer_records(
+            'pixel_artwork',
+            '_pixel_upload_email',
+            (int) $user->ID,
+            $customer_email
+        );
         $orders = function_exists('wc_get_orders')
             ? wc_get_orders([
                 'customer_id' => (int) $user->ID,
@@ -1366,6 +1360,48 @@ final class Pixel_Core
         }
 
         return $item_names !== [] ? implode(', ', $item_names) : 'Print Order';
+    }
+
+    private function get_customer_records(string $post_type, string $email_meta_key, int $user_id, string $customer_email): array
+    {
+        $query_args = [
+            'post_type'      => $post_type,
+            'post_status'    => 'publish',
+            'posts_per_page' => 20,
+            'orderby'        => 'modified',
+            'order'          => 'DESC',
+        ];
+        $records = $user_id > 0
+            ? get_posts($query_args + ['author' => $user_id])
+            : [];
+
+        if ($customer_email !== '') {
+            $email_records = get_posts(
+                $query_args + [
+                    'meta_key'   => $email_meta_key,
+                    'meta_value' => $customer_email,
+                ]
+            );
+
+            foreach ($email_records as $record) {
+                $records[$record->ID] = $record;
+            }
+        }
+
+        $records_by_id = [];
+        foreach ($records as $record) {
+            if ($record instanceof WP_Post) {
+                $records_by_id[$record->ID] = $record;
+            }
+        }
+
+        usort(
+            $records_by_id,
+            static fn(WP_Post $first, WP_Post $second): int =>
+                (int) get_post_modified_time('U', true, $second) <=> (int) get_post_modified_time('U', true, $first)
+        );
+
+        return array_slice($records_by_id, 0, 20);
     }
 
     private function find_woocommerce_order(string $order_number)
