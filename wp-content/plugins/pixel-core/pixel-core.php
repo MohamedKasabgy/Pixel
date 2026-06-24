@@ -17,10 +17,12 @@ define('PIXEL_CORE_PATH', plugin_dir_path(__FILE__));
 define('PIXEL_CORE_URL', plugin_dir_url(__FILE__));
 
 require_once PIXEL_CORE_PATH . 'includes/class-pixel-core.php';
+require_once PIXEL_CORE_PATH . 'includes/class-pixel-admin-fields.php';
 
 register_activation_hook(__FILE__, ['Pixel_Core', 'activate']);
 register_deactivation_hook(__FILE__, ['Pixel_Core', 'deactivate']);
 
 add_action('plugins_loaded', static function (): void {
     Pixel_Core::instance();
+    Pixel_Admin_Fields::init();
 });
