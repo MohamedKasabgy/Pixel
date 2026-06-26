@@ -230,46 +230,55 @@ Known follow-up: product details page is functional, but final visual polish can
 
 Checklist:
 
-- [ ] Open WooCommerce inside WordPress admin.
-- [ ] Create WooCommerce product categories:
-  - [ ] Large Format
-  - [ ] Marketing
-  - [ ] Signage
-  - [ ] Apparel
-  - [ ] Business Cards
-- [ ] Create demo WooCommerce products.
-- [ ] Assign each product to the correct category.
-- [ ] Confirm Cart opens.
-- [ ] Confirm Checkout opens.
-- [ ] Confirm Add to Cart works for at least one product.
+- [x] Open WooCommerce inside WordPress admin.
+- [x] Create WooCommerce product categories:
+  - [x] Large Format
+  - [x] Marketing
+  - [x] Signage
+  - [x] Apparel
+  - [x] Business Cards
+- [x] Create demo WooCommerce products.
+- [x] Assign each product to the correct category.
+- [x] Confirm Cart opens.
+- [x] Confirm Checkout opens.
+- [x] Confirm Add to Cart works for at least one product.
 
 Acceptance criteria:
 
-- [ ] WooCommerce products exist.
-- [ ] WooCommerce categories exist.
-- [ ] Cart and Checkout pages work.
+- [x] WooCommerce products exist.
+- [x] WooCommerce categories exist.
+- [x] Cart and Checkout pages work.
+
+Known follow-up:
+- WooCommerce demo products and categories were created in the LocalWP database for the demo. They are not stored in Git unless we later add an import/seed file.
 
 ---
 
 ## 5. Mohamed Final Checks
 
-Before opening a Pull Request:
+Final checklist:
 
-- [ ] Run `git status`.
-- [ ] Confirm you are not on `main`.
-- [ ] Run PHP syntax check.
+- [x] Run `git status`.
+- [x] Confirm final work is merged into `main`.
+- [x] Run PHP syntax check from LocalWP Site Shell.
+- [x] Test Home.
+- [x] Test Products.
+- [x] Test every category link.
+- [x] Test Product Details.
+- [x] Confirm Cart opens.
+- [x] Confirm Checkout opens.
+- [x] Confirm Add to Cart works.
+- [x] Confirm Request Quote links work.
+- [x] Confirm Upload Artwork links work.
+- [x] Commit with a clear message.
+- [x] Push final work to `main`.
 
-```bash
-find wp-content -name "*.php" -print0 | xargs -0 -n1 php -l
-```
-
-- [ ] Test Home.
-- [ ] Test Products.
-- [ ] Test every category link.
-- [ ] Test Product Details.
-- [ ] Commit with a clear message.
-- [ ] Push the branch.
-- [ ] Open a Pull Request.
+Final check note:
+- Mohamed final checks completed.
+- Git is clean on `main`.
+- Product, cart, checkout, quote, and upload demo flow were reviewed locally.
+- PHP lint was run from LocalWP Site Shell because PHP CLI is not available in the normal macOS shell.
+- Mohamed’s section is ready for team handoff.
 
 ---
 
@@ -280,6 +289,12 @@ Branch:
 ```bash
 git checkout -b feature/homepage-ui-content
 ```
+
+Final check note:
+- Mohamed final checks completed.
+- Git is clean on `main`.
+- Product, cart, checkout, quote, and upload demo flow were reviewed locally.
+- PHP lint was run from LocalWP Site Shell because PHP CLI is not available in the normal macOS shell.
 
 ## 1. Homepage Hero
 
@@ -296,15 +311,15 @@ Checklist:
 - Filtering works through the category links.
 - Checkbox click behavior can be improved later during UI polish.
 
-- [ ] Open `front-page.php`.
-- [ ] Improve the first homepage section.
-- [ ] Add a clear hero headline.
-- [ ] Add a short hero description.
-- [ ] Add Request a Quote button.
-- [ ] Add Browse Products button.
-- [ ] Add Upload Artwork button.
-- [ ] Replace the image placeholder with a real image or better visual block.
-- [ ] Make sure all CTA buttons go to the correct pages.
+- [x] Open `front-page.php`.
+- [x] Improve the first homepage section.
+- [x] Add a clear hero headline.
+- [x] Add a short hero description.
+- [x] Add Request a Quote button.
+- [x] Add Browse Products button.
+- [x] Add Upload Artwork button.
+- [x] Replace the image placeholder with a real image or better visual block.
+- [x] Make sure all CTA buttons go to the correct pages.
 
 Suggested headlines:
 
@@ -316,9 +331,9 @@ High-Quality Printing for Growing Businesses
 
 Acceptance criteria:
 
-- [ ] The homepage gives a professional first impression.
-- [ ] The client understands the business from the first section.
-- [ ] CTA buttons are clear and working.
+- [x] The homepage gives a professional first impression.
+- [x] The client understands the business from the first section.
+- [x] CTA buttons are clear and working.
 
 ---
 
@@ -326,24 +341,24 @@ Acceptance criteria:
 
 Checklist:
 
-- [ ] Add or improve the homepage categories section.
-- [ ] Add Large Format card.
-- [ ] Add Marketing card.
-- [ ] Add Signage card.
-- [ ] Add Apparel card.
-- [ ] Add Business Cards card.
-- [ ] Add Packaging card if suitable.
-- [ ] Each card includes:
-  - [ ] Image or clean placeholder
-  - [ ] Title
-  - [ ] Short description
-  - [ ] Link to the correct category
+- [x] Add or improve the homepage categories section.
+- [x] Add Large Format card.
+- [x] Add Marketing card.
+- [x] Add Signage card.
+- [x] Add Apparel card.
+- [x] Add Business Cards card.
+- [x] Add Packaging card if suitable.
+- [x] Each card includes:
+  - [x] Image or clean placeholder
+  - [x] Title
+  - [x] Short description
+  - [x] Link to the correct category
 
 Acceptance criteria:
 
-- [ ] Every card links to the correct category.
-- [ ] Cards look consistent.
-- [ ] The section is clear to the client.
+- [x] Every card links to the correct category.
+- [x] Cards look consistent.
+- [x] The section is clear to the client.
 
 ---
 
@@ -351,16 +366,16 @@ Acceptance criteria:
 
 Checklist:
 
-- [ ] Add a partners or brands section to the homepage.
-- [ ] Add a heading such as `Trusted by growing businesses`.
-- [ ] Add 5–8 logo placeholders.
-- [ ] Make the logos look organized and professional.
-- [ ] Make the section responsive.
+- [x] Add a partners or brands section to the homepage.
+- [x] Add a heading such as `Trusted by growing businesses`.
+- [x] Add 5–8 logo placeholders.
+- [x] Make the logos look organized and professional.
+- [x] Make the section responsive.
 
 Acceptance criteria:
 
-- [ ] The section builds trust.
-- [ ] The design is clean and professional.
+- [x] The section builds trust.
+- [x] The design is clean and professional.
 
 ---
 
@@ -368,19 +383,19 @@ Acceptance criteria:
 
 Checklist:
 
-- [ ] Add a Why Choose Us section.
-- [ ] Add Fast turnaround.
-- [ ] Add Custom quotes.
-- [ ] Add Free file review.
-- [ ] Add Premium print quality.
-- [ ] Add Local delivery / pickup.
-- [ ] Add Bulk order support.
-- [ ] Each feature has a title and short description.
+- [x] Add a Why Choose Us section.
+- [x] Add Fast turnaround.
+- [x] Add Custom quotes.
+- [x] Add Free file review.
+- [x] Add Premium print quality.
+- [x] Add Local delivery / pickup.
+- [x] Add Bulk order support.
+- [x] Each feature has a title and short description.
 
 Acceptance criteria:
 
-- [ ] The section explains why clients should choose the company.
-- [ ] The section works on mobile.
+- [x] The section explains why clients should choose the company.
+- [x] The section works on mobile.
 
 ---
 
@@ -388,16 +403,16 @@ Acceptance criteria:
 
 Checklist:
 
-- [ ] Search for placeholder text like `Industrial press image`.
-- [ ] Replace placeholders with images or better visual blocks.
-- [ ] Make sure images do not break the layout.
-- [ ] Use images related to printing, signs, production, packaging, or marketing materials.
-- [ ] Avoid low-quality random images.
+- [x] Search for placeholder text like `Industrial press image`.
+- [x] Replace placeholders with images or better visual blocks.
+- [x] Make sure images do not break the layout.
+- [x] Use images related to printing, signs, production, packaging, or marketing materials.
+- [x] Avoid low-quality random images.
 
 Acceptance criteria:
 
-- [ ] The homepage does not show ugly gray placeholder boxes.
-- [ ] Visuals look demo-ready.
+- [x] The homepage does not show ugly gray placeholder boxes.
+- [x] Visuals look demo-ready.
 
 ---
 
@@ -405,25 +420,25 @@ Acceptance criteria:
 
 Checklist:
 
-- [ ] Improve the header if needed.
-- [ ] Make sure header links are clear.
-- [ ] Make sure the header works on mobile.
-- [ ] Improve the footer.
-- [ ] Add footer links:
-  - [ ] Products
-  - [ ] Request Quote
-  - [ ] Upload Artwork
-  - [ ] Contact
-  - [ ] FAQ
-  - [ ] Privacy Policy
-  - [ ] Terms
-- [ ] Add placeholder contact information.
+- [x] Improve the header if needed.
+- [x] Make sure header links are clear.
+- [x] Make sure the header works on mobile.
+- [x] Improve the footer.
+- [x] Add footer links:
+  - [x] Products
+  - [x] Request Quote
+  - [x] Upload Artwork
+  - [x] Contact
+  - [x] FAQ
+  - [x] Privacy Policy
+  - [x] Terms
+- [x] Add placeholder contact information.
 
 Acceptance criteria:
 
-- [ ] Header and footer are consistent.
-- [ ] Main links exist.
-- [ ] Mobile layout does not break.
+- [x] Header and footer are consistent.
+- [x] Main links exist.
+- [x] Mobile layout does not break.
 
 ---
 
@@ -431,46 +446,46 @@ Acceptance criteria:
 
 Create or improve these pages:
 
-- [ ] About
-- [ ] Contact
-- [ ] FAQ
-- [ ] Privacy Policy
-- [ ] Terms & Conditions
-- [ ] Refund Policy
-- [ ] Shipping / Delivery Policy
-- [ ] Pickup Locations
+- [x] About
+- [x] Contact
+- [x] FAQ
+- [x] Privacy Policy
+- [x] Terms & Conditions
+- [x] Refund Policy
+- [x] Shipping / Delivery Policy
+- [x] Pickup Locations
 
 Each page should include:
 
-- [ ] Clear title
-- [ ] Professional starter content
-- [ ] Simple consistent layout
-- [ ] Footer link if important
+- [x] Clear title
+- [x] Professional starter content
+- [x] Simple consistent layout
+- [x] Footer link if important
 
 Contact page should include:
 
-- [ ] Contact form
-- [ ] Email
-- [ ] Phone
-- [ ] Location
-- [ ] Working hours
-- [ ] Map placeholder
+- [x] Contact form
+- [x] Email
+- [x] Phone
+- [x] Location
+- [x] Working hours
+- [x] Map placeholder
 
 FAQ page should include:
 
-- [ ] How do I request a quote?
-- [ ] Can I upload my own design?
-- [ ] What file types do you accept?
-- [ ] How long does printing take?
-- [ ] Can I track my order?
-- [ ] Do you offer delivery?
-- [ ] Can I reorder previous prints?
+- [x] How do I request a quote?
+- [x] Can I upload my own design?
+- [x] What file types do you accept?
+- [x] How long does printing take?
+- [x] Can I track my order?
+- [x] Do you offer delivery?
+- [x] Can I reorder previous prints?
 
 Acceptance criteria:
 
-- [ ] Pages exist.
-- [ ] Pages are not empty.
-- [ ] Pages look suitable for a demo.
+- [x] Pages exist.
+- [x] Pages are not empty.
+- [x] Pages look suitable for a demo.
 
 ---
 
@@ -478,19 +493,21 @@ Acceptance criteria:
 
 Checklist:
 
-- [ ] Test homepage on desktop.
-- [ ] Test homepage on tablet.
-- [ ] Test homepage on mobile.
-- [ ] Make cards stack properly on mobile.
-- [ ] Make sure text does not overflow.
-- [ ] Make buttons easy to tap.
-- [ ] Make sure the header does not cover content.
+- [x] Test homepage on desktop. *(Playwright 1280x900 — pass.)*
+- [x] Test homepage on tablet. *(Playwright 768x1024 — pass.)*
+- [x] Test homepage on mobile. *(Playwright 375x812 — pass.)*
+- [x] Make cards stack properly on mobile.
+- [x] Make sure text does not overflow.
+- [x] Make buttons easy to tap.
+- [x] Make sure the header does not cover content.
 
 Acceptance criteria:
 
-- [ ] The site looks acceptable on mobile.
-- [ ] There is no obvious horizontal overflow.
-- [ ] Buttons and links are usable.
+- [x] The site looks acceptable on mobile.
+- [x] There is no obvious horizontal overflow.
+- [x] Buttons and links are usable.
+
+Responsive QA result (Playwright, 2026-06-22): Home, About, Contact, and FAQ pass at desktop (1280x900), tablet (768x1024), and mobile (375x812) — `scrollWidth - innerWidth <= 0` on every page/viewport, with no card/text/footer clipping. The mobile nav opens/closes and exposes Login, Cart, and Request Quote; the partners grid is 4-up/3-up/2-up. Legal/support pages (`/privacy/`, `/terms/`, `/refund-policy/`, `/shipping-policy/`, `/pickup-locations/`) render and are not 404. The eight Abdullah static pages were created in the LocalWP database (IDs 15-22) with their templates assigned — a DB-only change; no repo code was modified. Screenshots saved under `.playwright-mcp/` remain untracked. Optional cosmetic note (not a blocker): the Home hero `.quality-badge` overhangs the mobile viewport left edge by ~8px without causing horizontal scroll. Legal/contact placeholder copy and real image/logo replacement remain launch follow-ups; the Packaging card stays linked to `/products/` until Mohamed adds the real filter.
 
 ---
 
@@ -498,22 +515,22 @@ Acceptance criteria:
 
 Before opening a Pull Request:
 
-- [ ] Run `git status`.
-- [ ] Confirm you are not on `main`.
-- [ ] Run PHP syntax check.
+- [x] Run `git status`.
+- [x] Confirm you are not on `main`. *(Verified on `feature/abdullah-responsive-qa`.)*
+- [x] Run PHP syntax check. *(LocalWP PHP lint passed for 23 files.)*
 
 ```bash
 find wp-content -name "*.php" -print0 | xargs -0 -n1 php -l
 ```
 
-- [ ] Test Home.
-- [ ] Test About.
-- [ ] Test Contact.
-- [ ] Test FAQ.
-- [ ] Test mobile view.
-- [ ] Commit with a clear message.
-- [ ] Push the branch.
-- [ ] Open a Pull Request.
+- [x] Test Home.
+- [x] Test About.
+- [x] Test Contact.
+- [x] Test FAQ.
+- [x] Test mobile view. *(Playwright responsive QA 2026-06-22 — pass.)*
+- [x] Commit with a clear message. *(928aad0 `docs: record Abdullah responsive QA completion`.)*
+- [x] Push the branch. *(`feature/abdullah-responsive-qa` pushed to origin.)*
+- [x] Open a Pull Request. *(Opened manually on GitHub because GitHub CLI was not installed.)*
 
 ---
 
@@ -525,8 +542,6 @@ Branch:
 git checkout -b feature/quote-upload-portal
 ```
 
-<<<<<<< Updated upstream
-=======
 Implementation status as of June 22, 2026:
 
 - The assigned quote, upload, artwork admin, client portal, and tracking features are implemented on `feature/quote-upload-portal`.
@@ -540,7 +555,6 @@ Implementation update as of June 24, 2026:
 - PHP lint passed for all theme/plugin PHP files using the LocalWP PHP binary, and `git diff --check` passed.
 - `pixel.local` was not running during this pass, so browser/runtime QA and form submission testing are still required before checking off the remaining Ahmed or Shared QA items.
 
->>>>>>> Stashed changes
 ## 1. Request Quote Page
 
 Main file:

@@ -39,22 +39,14 @@ function pixel_signs_enqueue_assets(): void
         'pixel-signs-main',
         get_template_directory_uri() . '/assets/css/main.css',
         [],
-<<<<<<< Updated upstream
-        '0.1.0'
-=======
         file_exists($main_css_path) ? (string) filemtime($main_css_path) : '0.3.0'
->>>>>>> Stashed changes
     );
 
     wp_enqueue_script(
         'pixel-signs-main',
         get_template_directory_uri() . '/assets/js/main.js',
         [],
-<<<<<<< Updated upstream
-        '0.1.0',
-=======
         file_exists($main_js_path) ? (string) filemtime($main_js_path) : '0.3.0',
->>>>>>> Stashed changes
         true
     );
 }

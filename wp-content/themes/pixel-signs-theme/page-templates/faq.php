@@ -34,7 +34,7 @@ get_header();
         </details>
         <details>
             <summary>Do you offer delivery?</summary>
-            <p>We offer local delivery and in-store pickup. See <a href="<?php echo esc_url(home_url('/shipping-delivery-policy/')); ?>">Shipping &amp; Delivery</a> and <a href="<?php echo esc_url(home_url('/pickup-locations/')); ?>">Pickup Locations</a> for details.</p>
+            <p>We offer local delivery and in-store pickup. See <a href="<?php echo esc_url(home_url('/shipping-policy/')); ?>">Shipping &amp; Delivery</a> and <a href="<?php echo esc_url(home_url('/pickup-locations/')); ?>">Pickup Locations</a> for details.</p>
         </details>
         <details>
             <summary>Can I reorder previous prints?</summary>

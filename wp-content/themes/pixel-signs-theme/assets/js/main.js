@@ -4,9 +4,20 @@
 
   if (!toggle || !nav) return;
 
-  toggle.addEventListener('click', function () {
-    const isOpen = nav.classList.toggle('open');
+  function setOpen(isOpen) {
+    nav.classList.toggle('open', isOpen);
     toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  }
+
+  toggle.addEventListener('click', function () {
+    setOpen(!nav.classList.contains('open'));
+  });
+
+  // Close the mobile menu after tapping a link so navigation feels clean.
+  nav.addEventListener('click', function (event) {
+    if (event.target.closest('a')) {
+      setOpen(false);
+    }
   });
 })();
 

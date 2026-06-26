@@ -83,24 +83,6 @@ $pixel_mega_menus = [
         <a href="<?php echo esc_url(home_url('/order-tracking/')); ?>">Track an order</a>
     </div>
 
-<<<<<<< Updated upstream
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">☰</button>
-
-    <nav id="primary-nav" class="primary-nav" aria-label="Primary navigation">
-        <?php
-        wp_nav_menu([
-            'theme_location' => 'primary',
-            'container'      => false,
-            'fallback_cb'    => false,
-            'items_wrap'     => '<ul>%3$s</ul>',
-        ]);
-        ?>
-        <a class="nav-link" href="<?php echo esc_url(home_url('/products/?category=large-format')); ?>">Large Format</a>
-        <a class="nav-link" href="<?php echo esc_url(home_url('/products/?category=marketing')); ?>">Marketing</a>
-        <a class="nav-link" href="<?php echo esc_url(home_url('/products/?category=signage')); ?>">Signage</a>
-        <a class="nav-link" href="<?php echo esc_url(home_url('/products/?category=apparel')); ?>">Apparel</a>
-        <a class="nav-link" href="<?php echo esc_url(home_url('/products/?category=business-cards')); ?>">Business Cards</a>
-=======
     <div class="commerce-mainbar">
         <a class="brand" href="<?php echo esc_url(home_url('/')); ?>" aria-label="Pixel Signs & Printing Home">
             <?php if (has_custom_logo()) : ?>
@@ -191,12 +173,6 @@ $pixel_mega_menus = [
                 </div>
             </div>
         <?php endforeach; ?>
->>>>>>> Stashed changes
     </nav>
-
-    <div class="header-actions">
-        <a class="ghost-link" href="<?php echo esc_url(wp_login_url()); ?>">Login</a>
-        <a class="btn btn-primary" href="<?php echo esc_url(home_url('/request-quote/')); ?>">Request Quote</a>
-    </div>
 </header>
 <main id="main" class="site-main">

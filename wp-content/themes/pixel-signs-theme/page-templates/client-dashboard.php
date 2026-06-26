@@ -3,8 +3,6 @@
  * Template Name: Client Dashboard
  */
 get_header();
-<<<<<<< Updated upstream
-=======
 ?>
 <?php if (!is_user_logged_in()) : ?>
 <div class="portal-guest-layout" style="max-width: 800px; margin: 4rem auto; padding: 2rem;">
@@ -46,20 +44,10 @@ get_header();
 <?php else : 
 $portal_user = wp_get_current_user();
 $portal_name = $portal_user->first_name !== '' ? $portal_user->first_name : $portal_user->display_name;
->>>>>>> Stashed changes
 ?>
 <div class="portal-layout">
     <aside class="portal-sidebar">
         <h2>Client Portal</h2>
-<<<<<<< Updated upstream
-        <p>Manage your print jobs</p>
-        <a class="active" href="<?php echo esc_url(home_url('/client-dashboard/')); ?>">▦ Dashboard</a>
-        <a href="<?php echo esc_url(home_url('/order-tracking/')); ?>">▣ Active Orders</a>
-        <a href="<?php echo esc_url(home_url('/request-quote/')); ?>">▤ Quote Requests</a>
-        <a href="<?php echo esc_url(home_url('/upload-artwork/')); ?>">▱ Design Files</a>
-        <a href="#">⚙ Settings</a>
-        <a class="new-project" href="<?php echo esc_url(home_url('/request-quote/')); ?>">＋ New Project</a>
-=======
         <p>Orders, quotes, files, and settings</p>
         <a class="active" href="<?php echo esc_url(home_url('/client-dashboard/')); ?>">Dashboard</a>
         <a href="<?php echo esc_url(home_url('/order-tracking/')); ?>">Order Status</a>
@@ -68,19 +56,13 @@ $portal_name = $portal_user->first_name !== '' ? $portal_user->first_name : $por
         <a href="<?php echo esc_url(home_url('/my-account/')); ?>">Account</a>
         <a href="<?php echo esc_url(wp_logout_url(home_url())); ?>">Logout</a>
         <a class="new-project" href="<?php echo esc_url(home_url('/request-quote/')); ?>">New Project</a>
->>>>>>> Stashed changes
     </aside>
     <section class="portal-main">
         <div class="portal-heading">
             <div>
-<<<<<<< Updated upstream
-                <h1>Welcome back!</h1>
-                <p>Here's the latest on your print projects.</p>
-=======
                 <span class="eyebrow">Pixel Customer Workspace</span>
                 <h1>Welcome, <?php echo esc_html($portal_name); ?></h1>
                 <p>Manage print orders, proofs, quote requests, saved designs, mailing lists, and account details from one polished portal.</p>
->>>>>>> Stashed changes
             </div>
             <div class="portal-actions">
                 <a class="btn btn-dark" href="<?php echo esc_url(home_url('/upload-artwork/')); ?>">Upload Artwork</a>

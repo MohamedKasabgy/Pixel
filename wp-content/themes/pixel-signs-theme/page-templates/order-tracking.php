@@ -19,7 +19,6 @@ get_header();
                 <h1>Order Tracking</h1>
                 <p>Track the status of your print production and delivery.</p>
             </div>
-            <form class="search-pill"><input placeholder="Enter Order Number (e.g. PX-8492)"></form>
         </div>
         <?php echo do_shortcode('[pixel_order_tracker]'); ?>
     </section>
