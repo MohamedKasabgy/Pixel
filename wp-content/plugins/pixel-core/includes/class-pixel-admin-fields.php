@@ -43,8 +43,8 @@ class Pixel_Admin_Fields {
         <div id="pixel_print_options_panel" class="panel woocommerce_options_panel">
             <div class="options_group pixel-admin-fields-wrap">
                 <p style="padding:12px 12px 0; color:#555;">
-                    <strong>Pixel Print Options</strong> — configure the fields a customer must fill before
-                    adding this product to cart. Leave empty to use the global default fields.
+                    <strong>Pixel Print Options</strong> — configure the product fields shown before Add to Cart.
+                    Mark required fields carefully; customers must complete them before checkout. Leave empty to use the global default fields.
                 </p>
 
                 <table class="widefat pixel-fields-table" style="margin:12px;">
@@ -53,9 +53,9 @@ class Pixel_Admin_Fields {
                             <th style="width:22%">Label</th>
                             <th style="width:18%">Field Key</th>
                             <th style="width:11%">Type</th>
-                            <th style="width:8%">Required</th>
+                            <th style="width:8%">Required?</th>
                             <th style="width:8%">Order</th>
-                            <th>Options (one per line — for select/checkbox)</th>
+                            <th>Options for select / checkbox fields (one per line)</th>
                             <th style="width:48px"></th>
                         </tr>
                     </thead>

@@ -1046,12 +1046,13 @@ final class Pixel_Core
                         <ul class="tracking-list">
                             <?php foreach ($associated_files as $artwork) : ?>
                                 <?php $download_url = $this->get_artwork_download_url($artwork->ID); ?>
+                                <?php $filename = $this->get_artwork_filename($artwork->ID); ?>
                                 <li>
                                     <span>
                                         <?php if ($download_url !== '' && is_user_logged_in()) : ?>
-                                            <a href="<?php echo esc_url($download_url); ?>"><?php echo esc_html((string) get_post_meta($artwork->ID, '_pixel_original_filename', true)); ?></a>
+                                            <a href="<?php echo esc_url($download_url); ?>"><?php echo esc_html($filename); ?></a>
                                         <?php else : ?>
-                                            <?php echo esc_html((string) get_post_meta($artwork->ID, '_pixel_original_filename', true)); ?>
+                                            <?php echo esc_html($filename); ?>
                                         <?php endif; ?>
                                     </span>
                                     <strong><?php echo esc_html($this->get_artwork_status_label((string) get_post_meta($artwork->ID, '_pixel_artwork_status', true))); ?></strong>
@@ -1135,7 +1136,45 @@ final class Pixel_Core
 
     public function render_reports_page(): void
     {
-        echo '<div class="wrap"><h1>Pixel Reports</h1><p>Placeholder analytics dashboard for total revenue, pending quotes, active orders, new files, urgent tasks, and weekly trends.</p></div>';
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('You do not have permission to view Pixel reports.', 'pixel-core'));
+        }
+
+        $quote_counts = wp_count_posts('pixel_quote');
+        $artwork_counts = wp_count_posts('pixel_artwork');
+        $total_quotes = isset($quote_counts->publish) ? (int) $quote_counts->publish : 0;
+        $total_artwork = isset($artwork_counts->publish) ? (int) $artwork_counts->publish : 0;
+        $new_pending_quotes = $this->count_posts_by_meta(
+            'pixel_quote',
+            '_pixel_quote_status',
+            ['new', 'pending-review', 'under-review']
+        );
+        $artwork_needing_review = $this->count_posts_by_meta(
+            'pixel_artwork',
+            '_pixel_artwork_status',
+            ['needs-review', 'under-review']
+        );
+        $order_count = $this->get_woocommerce_orders_count();
+        $customer_count = $this->get_customer_user_count();
+        $cards = [
+            'Total quote requests'      => $total_quotes,
+            'New / pending quotes'      => $new_pending_quotes,
+            'Total artwork uploads'     => $total_artwork,
+            'Artwork needing review'    => $artwork_needing_review,
+            'WooCommerce orders'        => $order_count,
+            'Customers'                 => $customer_count,
+        ];
+
+        echo '<div class="wrap"><h1>Pixel Reports</h1>';
+        echo '<p>Simple live counts from Pixel quote requests, artwork uploads, WooCommerce orders, and customer accounts.</p>';
+        echo '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;max-width:1100px;margin-top:20px;">';
+        foreach ($cards as $label => $value) {
+            echo '<div style="background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:18px;">';
+            echo '<span style="display:block;color:#646970;font-size:13px;margin-bottom:10px;">' . esc_html($label) . '</span>';
+            echo '<strong style="display:block;color:#1d2327;font-size:30px;line-height:1;">' . esc_html(number_format_i18n((int) $value)) . '</strong>';
+            echo '</div>';
+        }
+        echo '</div></div>';
     }
 
     public function register_artwork_meta_boxes(): void
@@ -1152,8 +1191,10 @@ final class Pixel_Core
             '_pixel_order_number' => ['label' => 'Order / Quote Number', 'type' => 'text'],
             '_pixel_project_name' => ['label' => 'Project Name', 'type' => 'text'],
         ];
+        $author_id = (int) get_post_field('post_author', $post->ID);
 
         echo '<table class="form-table">';
+        echo '<tr><th>Customer / User ID</th><td>' . esc_html($author_id > 0 ? (string) $author_id : 'Guest submission') . '</td></tr>';
         foreach ($fields as $key => $field) {
             $value = get_post_meta($post->ID, $key, true);
             printf(
@@ -1164,6 +1205,11 @@ final class Pixel_Core
                 esc_attr((string) $value)
             );
         }
+
+        printf(
+            '<tr><th><label for="pixel_artwork_notes">Notes</label></th><td><textarea class="large-text" rows="5" id="pixel_artwork_notes" name="pixel_artwork_notes">%s</textarea></td></tr>',
+            esc_textarea((string) $post->post_content)
+        );
 
         $current_status = $this->normalize_artwork_status((string) get_post_meta($post->ID, '_pixel_artwork_status', true));
         echo '<tr><th><label for="_pixel_artwork_status">Review Status</label></th><td><select id="_pixel_artwork_status" name="_pixel_artwork_status">';
@@ -1183,7 +1229,7 @@ final class Pixel_Core
             printf(
                 '<a class="button button-secondary" href="%1$s">Download %2$s</a>',
                 esc_url($download_url),
-                esc_html((string) get_post_meta($post->ID, '_pixel_original_filename', true))
+                esc_html($this->get_artwork_filename($post->ID))
             );
         } else {
             echo '<em>No file is attached.</em>';
@@ -1209,6 +1255,15 @@ final class Pixel_Core
             }
         }
 
+        if (isset($_POST['pixel_artwork_notes'])) {
+            remove_action('save_post_pixel_artwork', [$this, 'save_artwork_meta'], 10);
+            wp_update_post([
+                'ID'           => $post_id,
+                'post_content' => sanitize_textarea_field(wp_unslash($_POST['pixel_artwork_notes'])),
+            ]);
+            add_action('save_post_pixel_artwork', [$this, 'save_artwork_meta'], 10, 2);
+        }
+
         if (isset($_POST['_pixel_upload_email'])) {
             $email = sanitize_email(wp_unslash($_POST['_pixel_upload_email']));
             if (is_email($email)) {
@@ -1230,11 +1285,12 @@ final class Pixel_Core
             'cb'              => $columns['cb'] ?? '<input type="checkbox">',
             'title'           => 'Artwork Record',
             'pixel_customer'  => 'Customer',
+            'pixel_email'     => 'Email',
             'pixel_reference' => 'Order / Quote',
             'pixel_project'   => 'Project',
             'pixel_file'      => 'File',
             'pixel_status'    => 'Status',
-            'date'            => $columns['date'] ?? 'Date',
+            'date'            => 'Uploaded Date',
         ];
     }
 
@@ -1242,19 +1298,20 @@ final class Pixel_Core
     {
         if ($column === 'pixel_customer') {
             $name = get_post_meta($post_id, '_pixel_upload_name', true);
-            $email = get_post_meta($post_id, '_pixel_upload_email', true);
             echo $name !== '' ? esc_html((string) $name) : '&mdash;';
-            if ($email !== '') {
-                echo '<br><a href="mailto:' . esc_attr((string) $email) . '">' . esc_html((string) $email) . '</a>';
-            }
+            return;
+        }
+
+        if ($column === 'pixel_email') {
+            $email = sanitize_email((string) get_post_meta($post_id, '_pixel_upload_email', true));
+            echo $email !== '' ? '<a href="mailto:' . esc_attr($email) . '">' . esc_html($email) . '</a>' : '&mdash;';
             return;
         }
 
         if ($column === 'pixel_file') {
             $download_url = $this->get_artwork_download_url($post_id);
-            $filename = get_post_meta($post_id, '_pixel_original_filename', true);
             if ($download_url !== '') {
-                echo '<a href="' . esc_url($download_url) . '">' . esc_html((string) $filename) . '</a>';
+                echo '<a href="' . esc_url($download_url) . '">' . esc_html($this->get_artwork_filename($post_id)) . '</a>';
             } else {
                 echo '&mdash;';
             }
@@ -1355,13 +1412,15 @@ final class Pixel_Core
             '_pixel_finish'           => 'Finish',
             '_pixel_finishing'        => 'Stakes / Finishing',
             '_pixel_artwork_status'   => 'Artwork Status',
-            '_pixel_due_date'         => 'Deadline',
+            '_pixel_due_date'         => 'Turnaround / Deadline',
             '_pixel_deliver_to'       => 'Deliver To',
             '_pixel_contact_method'   => 'Contact Method',
-            '_pixel_delivery_method'  => 'Delivery Method',
+            '_pixel_delivery_method'  => 'Delivery / Pickup Preference',
         ];
+        $author_id = (int) get_post_field('post_author', $post->ID);
 
         echo '<table class="form-table">';
+        echo '<tr><th>Customer / User ID</th><td>' . esc_html($author_id > 0 ? (string) $author_id : 'Guest submission') . '</td></tr>';
         foreach ($fields as $key => $label) {
             $value = get_post_meta($post->ID, $key, true);
             printf(
@@ -1371,6 +1430,11 @@ final class Pixel_Core
                 esc_attr((string) $value)
             );
         }
+
+        printf(
+            '<tr><th><label for="pixel_quote_notes">Project Notes</label></th><td><textarea class="large-text" rows="6" id="pixel_quote_notes" name="pixel_quote_notes">%s</textarea></td></tr>',
+            esc_textarea((string) $post->post_content)
+        );
 
         $current_status = $this->normalize_quote_status((string) get_post_meta($post->ID, '_pixel_quote_status', true));
         echo '<tr><th><label for="_pixel_quote_status">Quote Status</label></th><td><select id="_pixel_quote_status" name="_pixel_quote_status">';
@@ -1389,7 +1453,7 @@ final class Pixel_Core
             printf(
                 '<tr><th>Reference File</th><td><a class="button button-secondary" href="%1$s">Download %2$s</a></td></tr>',
                 esc_url($download_url),
-                esc_html((string) get_post_meta($post->ID, '_pixel_original_filename', true))
+                esc_html($this->get_artwork_filename($post->ID))
             );
         }
         echo '</table>';
@@ -1433,8 +1497,25 @@ final class Pixel_Core
         ];
         foreach ($fields as $field) {
             if (isset($_POST[$field])) {
+                if ($field === '_pixel_customer_email') {
+                    $email = sanitize_email(wp_unslash($_POST[$field]));
+                    if (is_email($email)) {
+                        update_post_meta($post_id, $field, $email);
+                    }
+                    continue;
+                }
+
                 update_post_meta($post_id, $field, sanitize_text_field(wp_unslash($_POST[$field])));
             }
+        }
+
+        if (isset($_POST['pixel_quote_notes'])) {
+            remove_action('save_post_pixel_quote', [$this, 'save_quote_meta'], 10);
+            wp_update_post([
+                'ID'           => $post_id,
+                'post_content' => sanitize_textarea_field(wp_unslash($_POST['pixel_quote_notes'])),
+            ]);
+            add_action('save_post_pixel_quote', [$this, 'save_quote_meta'], 10, 2);
         }
 
         if (isset($_POST['_pixel_quote_status'])) {
@@ -1451,10 +1532,11 @@ final class Pixel_Core
             'cb'             => $columns['cb'] ?? '<input type="checkbox">',
             'title'          => 'Quote Request',
             'pixel_customer' => 'Customer',
+            'pixel_email'    => 'Email',
             'pixel_product'  => 'Product',
             'pixel_quantity' => 'Quantity',
             'pixel_status'   => 'Status',
-            'date'           => $columns['date'] ?? 'Date',
+            'date'           => 'Submitted Date',
         ];
     }
 
@@ -1462,11 +1544,13 @@ final class Pixel_Core
     {
         if ($column === 'pixel_customer') {
             $name  = get_post_meta($post_id, '_pixel_customer_name', true);
-            $email = get_post_meta($post_id, '_pixel_customer_email', true);
-            echo esc_html((string) $name);
-            if ($email !== '') {
-                echo '<br><a href="mailto:' . esc_attr((string) $email) . '">' . esc_html((string) $email) . '</a>';
-            }
+            echo $name !== '' ? esc_html((string) $name) : '&mdash;';
+            return;
+        }
+
+        if ($column === 'pixel_email') {
+            $email = sanitize_email((string) get_post_meta($post_id, '_pixel_customer_email', true));
+            echo $email !== '' ? '<a href="mailto:' . esc_attr($email) . '">' . esc_html($email) . '</a>' : '&mdash;';
             return;
         }
 
@@ -1497,6 +1581,11 @@ final class Pixel_Core
         $selected_status = isset($_GET[$query_key])
             ? sanitize_title((string) wp_unslash($_GET[$query_key]))
             : '';
+        if ($selected_status !== '') {
+            $selected_status = $is_quote
+                ? $this->normalize_quote_status($selected_status)
+                : $this->normalize_artwork_status($selected_status);
+        }
 
         echo '<select name="' . esc_attr($query_key) . '">';
         echo '<option value="">All ' . ($is_quote ? 'quote' : 'artwork') . ' statuses</option>';
@@ -1525,18 +1614,76 @@ final class Pixel_Core
         $status = isset($_GET[$query_key])
             ? sanitize_title((string) wp_unslash($_GET[$query_key]))
             : '';
+        if ($status !== '') {
+            $status = $is_quote
+                ? $this->normalize_quote_status($status)
+                : $this->normalize_artwork_status($status);
+        }
 
         if ($status !== '' && isset($statuses[$status])) {
-            $query->set('meta_key', $meta_key);
-            $query->set('meta_value', $status);
+            $meta_values = [$status];
+            if ($status === 'pending-review' || $status === 'needs-review') {
+                $meta_values[] = 'under-review';
+            }
+
+            $query->set('meta_query', [
+                [
+                    'key'     => $meta_key,
+                    'value'   => $meta_values,
+                    'compare' => 'IN',
+                ],
+            ]);
         }
+    }
+
+    private function count_posts_by_meta(string $post_type, string $meta_key, array $meta_values): int
+    {
+        $query = new WP_Query([
+            'post_type'              => $post_type,
+            'post_status'            => 'publish',
+            'fields'                 => 'ids',
+            'posts_per_page'         => 1,
+            'no_found_rows'          => false,
+            'update_post_meta_cache' => false,
+            'update_post_term_cache' => false,
+            'meta_query'             => [
+                [
+                    'key'     => $meta_key,
+                    'value'   => array_map('sanitize_title', $meta_values),
+                    'compare' => 'IN',
+                ],
+            ],
+        ]);
+
+        return (int) $query->found_posts;
+    }
+
+    private function get_woocommerce_orders_count(): int
+    {
+        if (!function_exists('wc_orders_count')) {
+            return 0;
+        }
+
+        $statuses = function_exists('wc_get_order_statuses') ? array_keys(wc_get_order_statuses()) : ['wc-processing'];
+        $count = 0;
+        foreach ($statuses as $status) {
+            $count += (int) wc_orders_count(str_replace('wc-', '', (string) $status));
+        }
+
+        return $count;
+    }
+
+    private function get_customer_user_count(): int
+    {
+        $counts = count_users();
+        return isset($counts['avail_roles']['customer']) ? (int) $counts['avail_roles']['customer'] : 0;
     }
 
     private function get_quote_statuses(): array
     {
         return [
             'new'                => 'New',
-            'under-review'       => 'Under Review',
+            'pending-review'     => 'Pending Review',
             'quoted'             => 'Quoted',
             'approved'           => 'Approved',
             'rejected'           => 'Rejected',
@@ -1717,6 +1864,9 @@ final class Pixel_Core
     private function normalize_quote_status(string $status): string
     {
         $normalized = sanitize_title($status);
+        if ($normalized === 'under-review') {
+            $normalized = 'pending-review';
+        }
         return isset($this->get_quote_statuses()[$normalized]) ? $normalized : 'new';
     }
 
@@ -1730,7 +1880,7 @@ final class Pixel_Core
     {
         return [
             'uploaded'       => 'Uploaded',
-            'under-review'   => 'Under Review',
+            'needs-review'   => 'Needs Review',
             'approved'       => 'Approved',
             'needs-revision' => 'Needs Revision',
             'rejected'       => 'Rejected',
@@ -1740,6 +1890,9 @@ final class Pixel_Core
     private function normalize_artwork_status(string $status): string
     {
         $normalized = sanitize_title($status);
+        if ($normalized === 'under-review') {
+            $normalized = 'needs-review';
+        }
         return isset($this->get_artwork_statuses()[$normalized]) ? $normalized : 'uploaded';
     }
 
@@ -1766,6 +1919,12 @@ final class Pixel_Core
             ),
             'pixel_download_artwork_' . $post_id
         );
+    }
+
+    private function get_artwork_filename(int $post_id): string
+    {
+        $filename = sanitize_file_name((string) get_post_meta($post_id, '_pixel_original_filename', true));
+        return $filename !== '' ? $filename : 'artwork-file';
     }
 
     private function current_user_can_access_artwork(int $post_id): bool
