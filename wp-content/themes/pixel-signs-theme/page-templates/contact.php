@@ -39,11 +39,11 @@ get_header();
         <div>
             <dl class="contact-info">
                 <dt>Email</dt>
-                <dd><a href="mailto:hello@pixelsigns.example">hello@pixelsigns.example</a></dd>
+                <dd><a href="mailto:hello@pixelsignsprinting.com">hello@pixelsignsprinting.com</a></dd>
                 <dt>Phone</dt>
-                <dd><a href="tel:+10000000000">+1 (000) 000-0000</a></dd>
+                <dd><a href="tel:+15551234567">(555) 123-4567</a></dd>
                 <dt>Location</dt>
-                <dd>123 Print Avenue, Suite 100<br>Your City, ST 00000</dd>
+                <dd>123 Print Avenue, Suite 100<br>New York, NY 10001</dd>
                 <dt>Working hours</dt>
                 <dd>Monday – Friday: 9:00 AM – 6:00 PM<br>Saturday: 10:00 AM – 2:00 PM<br>Sunday: Closed</dd>
             </dl>
