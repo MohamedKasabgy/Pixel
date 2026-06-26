@@ -71,6 +71,12 @@ $demo_products = [
         'price' => '$30.00',
         'badge' => 'Custom Shapes',
     ],
+    'roll-labels' => [
+        'title' => 'Roll Labels',
+        'description' => 'Roll-format labels for packaging lines, bottles, jars, shipping, and promotions.',
+        'price' => '$44.00',
+        'badge' => 'Roll Format',
+    ],
     't-shirts' => [
         'title' => 'T-Shirts',
         'description' => 'Custom printed shirts for crews, events, launches, and branded merchandise.',
@@ -100,6 +106,18 @@ $demo_products = [
         'description' => 'Branded folding cartons and product boxes for retail, gifts, launches, and promotions.',
         'price' => 'Request Quote',
         'badge' => 'Retail Ready',
+    ],
+    'paper-bags' => [
+        'title' => 'Paper Bags',
+        'description' => 'Custom printed paper bags for retail pickup, events, product launches, and gifts.',
+        'price' => 'Request Quote',
+        'badge' => 'Retail Bags',
+    ],
+    'packing-tape' => [
+        'title' => 'Packing Tape',
+        'description' => 'Branded packing tape for shipping cartons, subscription boxes, and fulfillment teams.',
+        'price' => 'Request Quote',
+        'badge' => 'Fulfillment',
     ],
     'custom-quote-product' => [
         'title' => 'Custom Quote Product',
@@ -165,7 +183,10 @@ $upload_artwork_url = add_query_arg('product', $product_slug, home_url('/upload-
                 <?php if ($product_image_url) : ?>
                     <img src="<?php echo esc_url($product_image_url); ?>" alt="<?php echo esc_attr($product_title); ?>">
                 <?php else : ?>
-                    <?php echo esc_html($product_badge); ?>
+                    <div class="product-mockup-scene" data-product="<?php echo esc_attr($product_slug); ?>">
+                        <span><?php echo esc_html($product_badge); ?></span>
+                        <strong><?php echo esc_html($product_title); ?></strong>
+                    </div>
                 <?php endif; ?>
             </div>
             <div class="thumb-row"><span></span><span></span><span></span><span></span></div>
@@ -180,55 +201,78 @@ $upload_artwork_url = add_query_arg('product', $product_slug, home_url('/upload-
         </div>
     </div>
     <aside class="config-card">
-        <h2><?php echo esc_html('Configure Product'); ?></h2>
+        <?php if ($wc_product && $wc_product->is_purchasable() && $wc_product->is_in_stock()) : ?>
+            <form class="cart" action="<?php echo esc_url(apply_filters('woocommerce_add_to_cart_form_action', $wc_product->get_permalink())); ?>" method="post" enctype="multipart/form-data">
+                
+                <?php do_action('woocommerce_before_add_to_cart_button'); ?>
 
-        <label for="pixel-product-size"><?php echo esc_html('Size'); ?></label>
-        <select id="pixel-product-size">
-            <option><?php echo esc_html('Standard'); ?></option>
-            <option><?php echo esc_html('Large Format'); ?></option>
-            <option><?php echo esc_html('Custom Size'); ?></option>
-        </select>
+                <div class="estimated-total">
+                    <span><?php echo esc_html('Starting Price'); ?></span>
+                    <strong><?php echo esc_html($product_price); ?></strong>
+                </div>
 
-        <label for="pixel-product-material"><?php echo esc_html('Material'); ?></label>
-        <select id="pixel-product-material">
-            <option><?php echo esc_html('Standard Paper'); ?></option>
-            <option><?php echo esc_html('Premium Cardstock'); ?></option>
-            <option><?php echo esc_html('Vinyl'); ?></option>
-            <option><?php echo esc_html('Rigid Board'); ?></option>
-        </select>
+                <input type="hidden" name="add-to-cart" value="<?php echo esc_attr($wc_product->get_id()); ?>" />
+                
+                <?php
+                if (function_exists('woocommerce_quantity_input')) {
+                    woocommerce_quantity_input([
+                        'min_value'   => apply_filters('woocommerce_quantity_input_min', $wc_product->get_min_purchase_quantity(), $wc_product),
+                        'max_value'   => apply_filters('woocommerce_quantity_input_max', $wc_product->get_max_purchase_quantity(), $wc_product),
+                        'input_value' => isset($_POST['quantity']) ? wc_stock_amount(wp_unslash($_POST['quantity'])) : $wc_product->get_min_purchase_quantity(),
+                        'classes'     => apply_filters('woocommerce_quantity_input_classes', ['input-text', 'qty', 'text'], $wc_product),
+                    ], $wc_product);
+                } else {
+                    echo '<input type="hidden" name="quantity" value="1" />';
+                }
+                ?>
+                
+                <button type="submit" class="single_add_to_cart_button btn btn-primary full"><?php echo esc_html('Add to Cart'); ?></button>
+            </form>
+        <?php else : ?>
+            <div class="estimated-total">
+                <span><?php echo esc_html('Starting Price'); ?></span>
+                <strong><?php echo esc_html($product_price); ?></strong>
+            </div>
+            <a class="btn btn-primary full" href="<?php echo esc_url($add_to_cart_url); ?>"><?php echo esc_html('Add to Cart'); ?></a>
+        <?php endif; ?>
 
-        <label for="pixel-product-finish"><?php echo esc_html('Finish'); ?></label>
-        <select id="pixel-product-finish">
-            <option><?php echo esc_html('Matte'); ?></option>
-            <option><?php echo esc_html('Gloss'); ?></option>
-            <option><?php echo esc_html('Laminated'); ?></option>
-            <option><?php echo esc_html('No Finish'); ?></option>
-        </select>
-
-        <label for="pixel-product-quantity"><?php echo esc_html('Quantity'); ?></label>
-        <select id="pixel-product-quantity">
-            <option><?php echo esc_html('100'); ?></option>
-            <option><?php echo esc_html('250'); ?></option>
-            <option><?php echo esc_html('500'); ?></option>
-            <option><?php echo esc_html('1000'); ?></option>
-        </select>
-
-        <label for="pixel-product-turnaround"><?php echo esc_html('Turnaround Time'); ?></label>
-        <select id="pixel-product-turnaround">
-            <option><?php echo esc_html('Standard: 3-5 Business Days'); ?></option>
-            <option><?php echo esc_html('Rush: 1-2 Business Days'); ?></option>
-            <option><?php echo esc_html('Custom Schedule'); ?></option>
-        </select>
-
-        <div class="estimated-total">
-            <span><?php echo esc_html('Starting Price'); ?></span>
-            <strong><?php echo esc_html($product_price); ?></strong>
-        </div>
-
-        <a class="btn btn-primary full" href="<?php echo esc_url($add_to_cart_url); ?>"><?php echo esc_html('Add to Cart'); ?></a>
         <a class="btn btn-outline full" href="<?php echo esc_url($request_quote_url); ?>"><?php echo esc_html('Request Quote'); ?></a>
         <a class="btn btn-dark full" href="<?php echo esc_url($upload_artwork_url); ?>"><?php echo esc_html('Upload Artwork'); ?></a>
     </aside>
+</section>
+<section class="section">
+    <div class="section-heading split">
+        <div>
+            <span class="eyebrow"><?php echo esc_html('Related Products'); ?></span>
+            <h2><?php echo esc_html('Complete the print set'); ?></h2>
+            <p><?php echo esc_html('Pair this product with other Pixel print pieces for a polished campaign or launch kit.'); ?></p>
+        </div>
+        <a class="btn btn-outline" href="<?php echo esc_url(home_url('/products/')); ?>"><?php echo esc_html('Browse All Products'); ?></a>
+    </div>
+    <div class="featured-product-grid compact-related">
+        <?php
+        $related_products = [
+            ['title' => 'Flyers', 'slug' => 'flyers', 'copy' => 'Promotional handouts and local campaign pieces.'],
+            ['title' => 'Custom Labels', 'slug' => 'labels', 'copy' => 'Packaging labels with durable print finishes.'],
+            ['title' => 'Upload Artwork', 'slug' => 'upload', 'copy' => 'Send files to the Pixel pre-press team.'],
+        ];
+        foreach ($related_products as $related) :
+            $related_url = $related['slug'] === 'upload'
+                ? home_url('/upload-artwork/')
+                : home_url('/product/' . $related['slug'] . '/');
+        ?>
+            <article class="commerce-product-card mini">
+                <a class="commerce-product-visual" data-product-mockup="<?php echo esc_attr($related['slug'] === 'labels' ? 'labels' : 'flyer'); ?>" href="<?php echo esc_url($related_url); ?>">
+                    <span><?php echo esc_html($related['title']); ?></span>
+                </a>
+                <div class="commerce-product-body">
+                    <h3><?php echo esc_html($related['title']); ?></h3>
+                    <p><?php echo esc_html($related['copy']); ?></p>
+                    <div class="commerce-product-meta"><a href="<?php echo esc_url($related_url); ?>"><?php echo esc_html('View'); ?></a></div>
+                </div>
+            </article>
+        <?php endforeach; ?>
+    </div>
 </section>
 <section class="section narrow">
     <h2 class="center-text"><?php echo esc_html('Frequently Asked Questions'); ?></h2>
@@ -239,6 +283,10 @@ $upload_artwork_url = add_query_arg('product', $product_slug, home_url('/upload-
     <details>
         <summary><?php echo esc_html('Can I request a custom size or material?'); ?></summary>
         <p><?php echo esc_html('Yes. Choose custom options on this page or send the project details through the quote request flow.'); ?></p>
+    </details>
+    <details>
+        <summary><?php echo esc_html('Can I upload artwork after checkout?'); ?></summary>
+        <p><?php echo esc_html('Yes. Use Upload Artwork with your order number, or upload files from the client portal after the order is placed.'); ?></p>
     </details>
 </section>
 <?php get_footer(); ?>

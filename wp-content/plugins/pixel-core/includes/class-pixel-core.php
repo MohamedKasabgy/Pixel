@@ -162,6 +162,10 @@ final class Pixel_Core
     {
         $message = '';
 
+        if (isset($_GET['quote_success'])) {
+            return '<div class="notice">Quote request submitted. Our team will review your project and contact you soon.</div>';
+        }
+
         if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['pixel_quote_nonce'])) {
             $message = $this->handle_quote_submission();
         }
@@ -170,13 +174,21 @@ final class Pixel_Core
             'business-cards'      => 'Business Cards',
             'flyers'              => 'Flyers',
             'brochures'           => 'Brochures',
+            'postcards'           => 'Postcards',
             'stickers'            => 'Stickers & Labels',
+            'custom-labels'       => 'Custom Labels',
+            'roll-labels'         => 'Roll Labels',
             'vinyl-banners'       => 'Vinyl Banners',
+            'retractable-banners' => 'Retractable Banners',
             'posters'             => 'Posters',
             'signage'             => 'Signs & Display Graphics',
+            'yard-signs'          => 'Yard Signs',
+            'foam-boards'         => 'Foam Boards',
             'vehicle-wraps'       => 'Vehicle Wraps',
             'apparel-printing'    => 'Apparel Printing',
             'packaging-boxes'     => 'Packaging Boxes',
+            'paper-bags'          => 'Paper Bags',
+            'packing-tape'        => 'Packing Tape',
             'custom-print-project'=> 'Other / Custom Print Project',
         ];
         $requested_product = isset($_GET['product']) ? sanitize_key(wp_unslash($_GET['product'])) : '';
@@ -188,16 +200,31 @@ final class Pixel_Core
             $selected_product = '';
         }
 
+        // Pre-fill from current user if logged in
+        $current_user = is_user_logged_in() ? wp_get_current_user() : null;
+        $prefill_name  = $current_user ? trim($current_user->first_name . ' ' . $current_user->last_name) : '';
+        $prefill_email = $current_user ? $current_user->user_email : '';
+        $prefill_phone = $current_user ? (string) get_user_meta($current_user->ID, 'billing_phone', true) : '';
+
         $values = [
-            'name'            => isset($_POST['pixel_name']) ? sanitize_text_field(wp_unslash($_POST['pixel_name'])) : '',
-            'email'           => isset($_POST['pixel_email']) ? sanitize_email(wp_unslash($_POST['pixel_email'])) : '',
+            'name'            => isset($_POST['pixel_name']) ? sanitize_text_field(wp_unslash($_POST['pixel_name'])) : $prefill_name,
+            'email'           => isset($_POST['pixel_email']) ? sanitize_email(wp_unslash($_POST['pixel_email'])) : $prefill_email,
             'company'         => isset($_POST['pixel_company']) ? sanitize_text_field(wp_unslash($_POST['pixel_company'])) : '',
-            'phone'           => isset($_POST['pixel_phone']) ? sanitize_text_field(wp_unslash($_POST['pixel_phone'])) : '',
+            'phone'           => isset($_POST['pixel_phone']) ? sanitize_text_field(wp_unslash($_POST['pixel_phone'])) : $prefill_phone,
             'quantity'        => isset($_POST['pixel_quantity']) ? absint($_POST['pixel_quantity']) : '',
+            'quantities'      => isset($_POST['pixel_quantities']) ? sanitize_text_field(wp_unslash($_POST['pixel_quantities'])) : '',
             'size'            => isset($_POST['pixel_size']) ? sanitize_text_field(wp_unslash($_POST['pixel_size'])) : '',
+            'width'           => isset($_POST['pixel_width']) ? sanitize_text_field(wp_unslash($_POST['pixel_width'])) : '',
+            'height'          => isset($_POST['pixel_height']) ? sanitize_text_field(wp_unslash($_POST['pixel_height'])) : '',
+            'stock'           => isset($_POST['pixel_stock']) ? sanitize_text_field(wp_unslash($_POST['pixel_stock'])) : '',
+            'colors'          => isset($_POST['pixel_colors']) ? sanitize_text_field(wp_unslash($_POST['pixel_colors'])) : '',
             'material'        => isset($_POST['pixel_material']) ? sanitize_text_field(wp_unslash($_POST['pixel_material'])) : '',
             'finish'          => isset($_POST['pixel_finish']) ? sanitize_text_field(wp_unslash($_POST['pixel_finish'])) : '',
+            'finishing'       => isset($_POST['pixel_finishing']) ? sanitize_text_field(wp_unslash($_POST['pixel_finishing'])) : '',
+            'artwork_status'  => isset($_POST['pixel_artwork_status']) ? sanitize_key(wp_unslash($_POST['pixel_artwork_status'])) : '',
             'due_date'        => isset($_POST['pixel_due_date']) ? sanitize_text_field(wp_unslash($_POST['pixel_due_date'])) : '',
+            'deliver_to'      => isset($_POST['pixel_deliver_to']) ? sanitize_text_field(wp_unslash($_POST['pixel_deliver_to'])) : '',
+            'contact_method'  => isset($_POST['pixel_contact_method']) ? sanitize_key(wp_unslash($_POST['pixel_contact_method'])) : '',
             'delivery_method' => isset($_POST['pixel_delivery_method']) ? sanitize_key(wp_unslash($_POST['pixel_delivery_method'])) : '',
             'details'         => isset($_POST['pixel_details']) ? sanitize_textarea_field(wp_unslash($_POST['pixel_details'])) : '',
         ];
@@ -207,6 +234,10 @@ final class Pixel_Core
         ?>
         <form class="quote-form" method="post" enctype="multipart/form-data">
             <?php wp_nonce_field('pixel_quote_request', 'pixel_quote_nonce'); ?>
+            <div class="form-step-heading">
+                <span>Step 1</span>
+                <h2>Select a Print Product</h2>
+            </div>
             <div class="form-grid">
                 <label>Full Name<input name="pixel_name" value="<?php echo esc_attr((string) $values['name']); ?>" autocomplete="name" required></label>
                 <label>Email<input type="email" name="pixel_email" value="<?php echo esc_attr((string) $values['email']); ?>" autocomplete="email" required></label>
@@ -225,13 +256,55 @@ final class Pixel_Core
                     <?php endforeach; ?>
                 </select>
             </label>
+            <div class="form-step-heading">
+                <span>Step 2</span>
+                <h2>Select Product Options</h2>
+            </div>
             <div class="form-grid">
                 <label>Quantity<input type="number" min="1" name="pixel_quantity" value="<?php echo esc_attr((string) $values['quantity']); ?>" required></label>
-                <label>Size<input name="pixel_size" value="<?php echo esc_attr((string) $values['size']); ?>" placeholder="e.g. 24 × 36 in or custom"></label>
+                <label>Quantity Breaks<input name="pixel_quantities" value="<?php echo esc_attr((string) $values['quantities']); ?>" placeholder="e.g. 250, 500, 1000"></label>
+            </div>
+            <div class="form-grid three">
+                <label>Finish Width<input name="pixel_width" value="<?php echo esc_attr((string) $values['width']); ?>" placeholder="Width"></label>
+                <label>Finish Height<input name="pixel_height" value="<?php echo esc_attr((string) $values['height']); ?>" placeholder="Height"></label>
+                <label>Size Notes<input name="pixel_size" value="<?php echo esc_attr((string) $values['size']); ?>" placeholder="e.g. 24 x 36 in or custom"></label>
+            </div>
+            <div class="form-grid">
+                <label>Stock / Paper
+                    <select name="pixel_stock">
+                        <option value="">Select stock</option>
+                        <option value="standard-paper" <?php selected($values['stock'], 'standard-paper'); ?>>Standard Paper</option>
+                        <option value="premium-cardstock" <?php selected($values['stock'], 'premium-cardstock'); ?>>Premium Cardstock</option>
+                        <option value="vinyl" <?php selected($values['stock'], 'vinyl'); ?>>Vinyl</option>
+                        <option value="rigid-board" <?php selected($values['stock'], 'rigid-board'); ?>>Rigid Board</option>
+                        <option value="custom" <?php selected($values['stock'], 'custom'); ?>>Custom / Not Sure</option>
+                    </select>
+                </label>
+                <label>Colors
+                    <select name="pixel_colors">
+                        <option value="">Select colors</option>
+                        <option value="full-color-front" <?php selected($values['colors'], 'full-color-front'); ?>>Full Color Front</option>
+                        <option value="full-color-both-sides" <?php selected($values['colors'], 'full-color-both-sides'); ?>>Full Color Both Sides</option>
+                        <option value="black-only" <?php selected($values['colors'], 'black-only'); ?>>Black Only</option>
+                        <option value="spot-color" <?php selected($values['colors'], 'spot-color'); ?>>Spot Color / Brand Match</option>
+                    </select>
+                </label>
             </div>
             <div class="form-grid">
                 <label>Material<input name="pixel_material" value="<?php echo esc_attr((string) $values['material']); ?>" placeholder="e.g. Vinyl, cardstock, acrylic"></label>
+                <label>Stakes / Finishing Options<input name="pixel_finishing" value="<?php echo esc_attr((string) $values['finishing']); ?>" placeholder="e.g. H-stakes, grommets, lamination"></label>
+            </div>
+            <div class="form-grid">
                 <label>Finish<input name="pixel_finish" value="<?php echo esc_attr((string) $values['finish']); ?>" placeholder="e.g. Matte, gloss, laminated"></label>
+                <label>Artwork Status
+                    <select name="pixel_artwork_status">
+                        <option value="">Select status</option>
+                        <option value="ready-to-print" <?php selected($values['artwork_status'], 'ready-to-print'); ?>>Ready to Print</option>
+                        <option value="needs-review" <?php selected($values['artwork_status'], 'needs-review'); ?>>Needs File Review</option>
+                        <option value="need-design-help" <?php selected($values['artwork_status'], 'need-design-help'); ?>>Need Design Help</option>
+                        <option value="will-send-later" <?php selected($values['artwork_status'], 'will-send-later'); ?>>Will Send Later</option>
+                    </select>
+                </label>
             </div>
             <div class="form-grid">
                 <label>Deadline<input type="date" name="pixel_due_date" value="<?php echo esc_attr((string) $values['due_date']); ?>"></label>
@@ -244,11 +317,23 @@ final class Pixel_Core
                     </select>
                 </label>
             </div>
+            <div class="form-grid">
+                <label>Deliver To<input name="pixel_deliver_to" value="<?php echo esc_attr((string) $values['deliver_to']); ?>" placeholder="City, state, pickup branch, or shipping address"></label>
+                <label>Preferred Contact Method
+                    <select name="pixel_contact_method">
+                        <option value="">Select contact method</option>
+                        <option value="email" <?php selected($values['contact_method'], 'email'); ?>>Email</option>
+                        <option value="phone" <?php selected($values['contact_method'], 'phone'); ?>>Phone</option>
+                        <option value="either" <?php selected($values['contact_method'], 'either'); ?>>Either</option>
+                    </select>
+                </label>
+            </div>
             <label>Project Notes<textarea name="pixel_details" placeholder="Describe the project, intended use, delivery notes, and any special requirements."><?php echo esc_textarea((string) $values['details']); ?></textarea></label>
             <label>Artwork / Reference File
                 <input type="file" name="pixel_artwork" accept=".pdf,.ai,.eps,.psd,.jpg,.jpeg,.png,.tif,.tiff,.zip" data-max-size="<?php echo esc_attr((string) $this->get_max_artwork_upload_size()); ?>">
                 <small>Optional. Maximum file size: <?php echo esc_html(size_format($this->get_max_artwork_upload_size())); ?>.</small>
             </label>
+            <label class="checkbox-line"><input type="checkbox" name="pixel_quote_terms" value="1" required> I confirm these project details are accurate and agree to be contacted about this quote.</label>
             <button class="btn btn-primary" type="submit">Submit Quote Request</button>
         </form>
         <?php
@@ -265,13 +350,21 @@ final class Pixel_Core
             'business-cards'       => 'Business Cards',
             'flyers'               => 'Flyers',
             'brochures'            => 'Brochures',
+            'postcards'            => 'Postcards',
             'stickers'             => 'Stickers & Labels',
+            'custom-labels'        => 'Custom Labels',
+            'roll-labels'          => 'Roll Labels',
             'vinyl-banners'        => 'Vinyl Banners',
+            'retractable-banners'  => 'Retractable Banners',
             'posters'              => 'Posters',
             'signage'              => 'Signs & Display Graphics',
+            'yard-signs'           => 'Yard Signs',
+            'foam-boards'          => 'Foam Boards',
             'vehicle-wraps'        => 'Vehicle Wraps',
             'apparel-printing'     => 'Apparel Printing',
             'packaging-boxes'      => 'Packaging Boxes',
+            'paper-bags'           => 'Paper Bags',
+            'packing-tape'         => 'Packing Tape',
             'custom-print-project' => 'Other / Custom Print Project',
         ];
         $delivery_methods = [
@@ -285,15 +378,24 @@ final class Pixel_Core
         $company          = sanitize_text_field(wp_unslash($_POST['pixel_company'] ?? ''));
         $phone            = sanitize_text_field(wp_unslash($_POST['pixel_phone'] ?? ''));
         $product_key      = sanitize_key(wp_unslash($_POST['pixel_product_type'] ?? ''));
+        $quantities       = sanitize_text_field(wp_unslash($_POST['pixel_quantities'] ?? ''));
         $size             = sanitize_text_field(wp_unslash($_POST['pixel_size'] ?? ''));
+        $width            = sanitize_text_field(wp_unslash($_POST['pixel_width'] ?? ''));
+        $height           = sanitize_text_field(wp_unslash($_POST['pixel_height'] ?? ''));
+        $stock            = sanitize_text_field(wp_unslash($_POST['pixel_stock'] ?? ''));
+        $colors           = sanitize_text_field(wp_unslash($_POST['pixel_colors'] ?? ''));
         $material         = sanitize_text_field(wp_unslash($_POST['pixel_material'] ?? ''));
         $finish           = sanitize_text_field(wp_unslash($_POST['pixel_finish'] ?? ''));
+        $finishing        = sanitize_text_field(wp_unslash($_POST['pixel_finishing'] ?? ''));
+        $artwork_status   = sanitize_key(wp_unslash($_POST['pixel_artwork_status'] ?? ''));
         $due_date         = sanitize_text_field(wp_unslash($_POST['pixel_due_date'] ?? ''));
+        $deliver_to       = sanitize_text_field(wp_unslash($_POST['pixel_deliver_to'] ?? ''));
+        $contact_method   = sanitize_key(wp_unslash($_POST['pixel_contact_method'] ?? ''));
         $delivery_key     = sanitize_key(wp_unslash($_POST['pixel_delivery_method'] ?? ''));
         $details          = sanitize_textarea_field(wp_unslash($_POST['pixel_details'] ?? ''));
         $qty              = absint($_POST['pixel_quantity'] ?? 0);
 
-        if ($name === '' || !is_email($email) || $phone === '' || !isset($products[$product_key]) || $qty < 1) {
+        if ($name === '' || !is_email($email) || $phone === '' || !isset($products[$product_key]) || $qty < 1 || empty($_POST['pixel_quote_terms'])) {
             return '<div class="notice error">Please complete the required fields.</div>';
         }
 
@@ -303,6 +405,11 @@ final class Pixel_Core
 
         if ($delivery_key !== '' && !isset($delivery_methods[$delivery_key])) {
             return '<div class="notice error">Please select a valid delivery method.</div>';
+        }
+
+        $contact_methods = ['email', 'phone', 'either'];
+        if ($contact_method !== '' && !in_array($contact_method, $contact_methods, true)) {
+            return '<div class="notice error">Please select a valid contact method.</div>';
         }
 
         $product = $products[$product_key];
@@ -325,19 +432,38 @@ final class Pixel_Core
         update_post_meta($post_id, '_pixel_product_key', $product_key);
         update_post_meta($post_id, '_pixel_product_type', $product);
         update_post_meta($post_id, '_pixel_quantity', $qty);
+        update_post_meta($post_id, '_pixel_quantities', $quantities);
         update_post_meta($post_id, '_pixel_size', $size);
+        update_post_meta($post_id, '_pixel_width', $width);
+        update_post_meta($post_id, '_pixel_height', $height);
+        update_post_meta($post_id, '_pixel_stock', $stock);
+        update_post_meta($post_id, '_pixel_colors', $colors);
         update_post_meta($post_id, '_pixel_material', $material);
         update_post_meta($post_id, '_pixel_finish', $finish);
+        update_post_meta($post_id, '_pixel_finishing', $finishing);
+        update_post_meta($post_id, '_pixel_artwork_status', $artwork_status);
         update_post_meta($post_id, '_pixel_due_date', $due_date);
+        update_post_meta($post_id, '_pixel_deliver_to', $deliver_to);
+        update_post_meta($post_id, '_pixel_contact_method', $contact_method);
         update_post_meta($post_id, '_pixel_delivery_method', $delivery_key !== '' ? $delivery_methods[$delivery_key] : '');
         update_post_meta($post_id, '_pixel_quote_status', 'new');
 
         $upload_result = $this->maybe_handle_upload($post_id, 'quote');
         if (is_wp_error($upload_result)) {
             update_post_meta($post_id, '_pixel_upload_error', $upload_result->get_error_message());
+            // Still redirect on success even if optional file upload failed
+            if (is_user_logged_in()) {
+                wp_safe_redirect(add_query_arg('quote_success', '1', home_url('/client-dashboard/')));
+                exit;
+            }
             return '<div class="notice">Quote request submitted, but the optional file could not be uploaded: '
                 . esc_html($upload_result->get_error_message())
                 . '. You can send it from the Upload Artwork page.</div>';
+        }
+
+        if (is_user_logged_in()) {
+            wp_safe_redirect(add_query_arg('quote_success', '1', home_url('/client-dashboard/')));
+            exit;
         }
 
         return '<div class="notice">Quote request submitted. Our team will review your project and contact you soon.</div>';
@@ -347,6 +473,10 @@ final class Pixel_Core
     {
         $message = '';
 
+        if (isset($_GET['upload_success'])) {
+            return '<div class="notice">Artwork uploaded successfully. Our pre-press team will review the file.</div>';
+        }
+
         if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['pixel_upload_nonce'])) {
             $message = $this->handle_artwork_upload();
         }
@@ -354,9 +484,13 @@ final class Pixel_Core
         $requested_project = isset($_GET['product'])
             ? sanitize_text_field(str_replace('-', ' ', (string) wp_unslash($_GET['product'])))
             : '';
+        // Pre-fill from current user if logged in
+        $current_user     = is_user_logged_in() ? wp_get_current_user() : null;
+        $prefill_name     = $current_user ? trim($current_user->first_name . ' ' . $current_user->last_name) : '';
+        $prefill_email    = $current_user ? $current_user->user_email : '';
         $values = [
-            'name'         => isset($_POST['pixel_upload_name']) ? sanitize_text_field(wp_unslash($_POST['pixel_upload_name'])) : '',
-            'email'        => isset($_POST['pixel_upload_email']) ? sanitize_email(wp_unslash($_POST['pixel_upload_email'])) : '',
+            'name'         => isset($_POST['pixel_upload_name']) ? sanitize_text_field(wp_unslash($_POST['pixel_upload_name'])) : $prefill_name,
+            'email'        => isset($_POST['pixel_upload_email']) ? sanitize_email(wp_unslash($_POST['pixel_upload_email'])) : $prefill_email,
             'order_number' => isset($_POST['pixel_order_number']) ? sanitize_text_field(wp_unslash($_POST['pixel_order_number'])) : '',
             'project'      => isset($_POST['pixel_project_name']) ? sanitize_text_field(wp_unslash($_POST['pixel_project_name'])) : ucwords($requested_project),
             'notes'        => isset($_POST['pixel_upload_notes']) ? sanitize_textarea_field(wp_unslash($_POST['pixel_upload_notes'])) : '',
@@ -429,6 +563,11 @@ final class Pixel_Core
         if (is_wp_error($upload_result)) {
             wp_delete_post($post_id, true);
             return '<div class="notice error">' . esc_html($upload_result->get_error_message()) . '</div>';
+        }
+
+        if (is_user_logged_in()) {
+            wp_safe_redirect(add_query_arg('upload_success', '1', home_url('/client-dashboard/')));
+            exit;
         }
 
         return '<div class="notice">Artwork uploaded. Our pre-press team will review the file.</div>';
@@ -928,10 +1067,54 @@ final class Pixel_Core
                     <p><?php echo $tracking_number !== '' ? 'Tracking: ' . esc_html($tracking_number) : 'Tracking number not yet assigned.'; ?></p>
                 </div>
             </div>
-        <?php elseif (!$search_attempted) : ?>
-            <div class="tracking-card tracking-empty">
-                <h2>Track production and delivery</h2>
-                <p>Enter the order number from your confirmation email. For privacy, guests must also provide the billing email used at checkout.</p>
+        <?php else : ?>
+            <div class="tracking-card">
+                <div class="tracking-top">
+                    <div>
+                        <h2>Demo Order #PX-9021 <span class="status-pill">In Production</span></h2>
+                        <p>Use this preview to show customers how Pixel order status will appear after checkout.</p>
+                    </div>
+                    <div>
+                        <small>Estimated Completion</small>
+                        <h2>3-5 days</h2>
+                    </div>
+                </div>
+                <div class="timeline-wrap">
+                    <div class="timeline">
+                        <?php
+                        $demo_steps = ['Quote Requested', 'Under Review', 'Approved', 'In Production', 'Quality Check', 'Ready for Pickup', 'Out for Delivery', 'Completed'];
+                        foreach ($demo_steps as $index => $step_label) :
+                            $step_class = $index < 3 ? 'done' : ($index === 3 ? 'current' : '');
+                            ?>
+                            <div class="timeline-step <?php echo esc_attr($step_class); ?>">
+                                <?php echo esc_html($step_label); ?><br>
+                                <small><?php echo $index < 3 ? 'Complete' : ($index === 3 ? 'Current stage' : 'Pending'); ?></small>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+            <div class="portal-cards tracking-details-grid">
+                <div class="portal-card">
+                    <h3>Order Items</h3>
+                    <ul class="tracking-list">
+                        <li><span>Retail Window Vinyls</span><strong>x 2</strong></li>
+                        <li><span>QR Code Stickers</span><strong>x 500</strong></li>
+                    </ul>
+                </div>
+                <div class="portal-card">
+                    <h3>Associated Files</h3>
+                    <ul class="tracking-list">
+                        <li><span>window-vinyl-final.pdf</span><strong>Approved</strong></li>
+                        <li><span>qr-sticker-sheet.pdf</span><strong>Under Review</strong></li>
+                    </ul>
+                </div>
+                <div class="portal-card">
+                    <h3>Shipping Details</h3>
+                    <p><strong>Local Pickup</strong></p>
+                    <p>Pixel production desk<br>123 Print Avenue, Suite 100</p>
+                    <p>Tracking number pending.</p>
+                </div>
             </div>
         <?php endif; ?>
         <?php
@@ -1162,10 +1345,19 @@ final class Pixel_Core
             '_pixel_customer_phone'   => 'Phone',
             '_pixel_product_type'     => 'Product Type',
             '_pixel_quantity'         => 'Quantity',
+            '_pixel_quantities'       => 'Quantity Breaks',
+            '_pixel_width'            => 'Finish Width',
+            '_pixel_height'           => 'Finish Height',
             '_pixel_size'             => 'Size',
+            '_pixel_stock'            => 'Stock / Paper',
+            '_pixel_colors'           => 'Colors',
             '_pixel_material'         => 'Material',
             '_pixel_finish'           => 'Finish',
+            '_pixel_finishing'        => 'Stakes / Finishing',
+            '_pixel_artwork_status'   => 'Artwork Status',
             '_pixel_due_date'         => 'Deadline',
+            '_pixel_deliver_to'       => 'Deliver To',
+            '_pixel_contact_method'   => 'Contact Method',
             '_pixel_delivery_method'  => 'Delivery Method',
         ];
 
@@ -1224,10 +1416,19 @@ final class Pixel_Core
             '_pixel_customer_phone',
             '_pixel_product_type',
             '_pixel_quantity',
+            '_pixel_quantities',
+            '_pixel_width',
+            '_pixel_height',
             '_pixel_size',
+            '_pixel_stock',
+            '_pixel_colors',
             '_pixel_material',
             '_pixel_finish',
+            '_pixel_finishing',
+            '_pixel_artwork_status',
             '_pixel_due_date',
+            '_pixel_deliver_to',
+            '_pixel_contact_method',
             '_pixel_delivery_method',
         ];
         foreach ($fields as $field) {
