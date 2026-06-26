@@ -104,7 +104,7 @@ $pixel_mega_menus = [
         <nav class="utility-nav" aria-label="Utility navigation">
             <a href="<?php echo esc_url(home_url('/products/')); ?>">Services</a>
             <a href="<?php echo esc_url(home_url('/faq/')); ?>">Help</a>
-            <a href="tel:+10000000000">+1 (000) 000-0000</a>
+            <a href="tel:+15551234567">(555) 123-4567</a>
             <?php if ( is_user_logged_in() ) : ?>
                 <a href="<?php echo esc_url(home_url('/client-dashboard/')); ?>">Dashboard</a>
             <?php else : ?>
