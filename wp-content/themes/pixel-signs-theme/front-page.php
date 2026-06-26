@@ -13,14 +13,19 @@
     <div class="hero-media">
         <?php /* Visual slot: CSS/SVG now; swap for a real photo later via background-image or an inner <img>. */ ?>
         <div class="hero-visual" role="img" aria-label="Commercial printing and signage production">
-            <svg class="hero-visual-art" viewBox="0 0 240 180" fill="none" aria-hidden="true" focusable="false">
-                <rect x="20" y="40" width="200" height="110" rx="10" fill="rgba(255,255,255,.10)"/>
-                <rect x="20" y="40" width="200" height="34" rx="10" fill="rgba(255,255,255,.16)"/>
-                <rect x="40" y="92" width="74" height="40" rx="6" fill="var(--px-accent)"/>
-                <rect x="126" y="92" width="74" height="18" rx="4" fill="rgba(255,255,255,.55)"/>
-                <rect x="126" y="116" width="50" height="16" rx="4" fill="rgba(255,255,255,.30)"/>
-                <circle cx="38" cy="57" r="6" fill="var(--px-accent)"/>
-                <rect x="54" y="52" width="80" height="10" rx="5" fill="rgba(255,255,255,.45)"/>
+            <svg class="hero-visual-art" viewBox="0 0 260 190" fill="none" aria-hidden="true" focusable="false">
+                <rect x="24" y="38" width="212" height="112" rx="12" fill="rgba(255,255,255,.12)"/>
+                <rect x="24" y="38" width="212" height="32" rx="12" fill="rgba(255,255,255,.18)"/>
+                <circle cx="43" cy="54" r="5" fill="var(--px-accent)"/>
+                <circle cx="60" cy="54" r="5" fill="rgba(255,255,255,.5)"/>
+                <rect x="78" y="49" width="86" height="10" rx="5" fill="rgba(255,255,255,.46)"/>
+                <rect x="42" y="92" width="82" height="42" rx="6" fill="var(--px-accent)"/>
+                <path d="M42 114h82" stroke="rgba(255,255,255,.55)" stroke-width="3"/>
+                <rect x="142" y="88" width="74" height="14" rx="4" fill="rgba(255,255,255,.58)"/>
+                <rect x="142" y="111" width="58" height="14" rx="4" fill="rgba(255,255,255,.34)"/>
+                <path d="M54 150h152l-18 22H72z" fill="rgba(255,255,255,.16)"/>
+                <path d="M72 161h116" stroke="rgba(255,255,255,.32)" stroke-width="3" stroke-linecap="round"/>
+                <path d="M26 78h208" stroke="rgba(255,255,255,.13)" stroke-width="4"/>
             </svg>
         </div>
         <div class="quality-badge"><strong>HQ</strong><span>Premium Quality<br>Commercial Grade Materials</span></div>
@@ -93,7 +98,7 @@
     <div class="partner-logos" aria-label="Partner and client brands">
         <?php
         /* Placeholder logo marks (SVG now). Each slot can hold a real <img> logo later. */
-        $partner_names = ['Northwind', 'Brightline', 'Summit Co.', 'Vertex', 'Harbor & Main', 'Lumen', 'Crestwave', 'Ironclad'];
+        $partner_names = ['The Coffee House', 'Summit Real Estate', 'Harbor Dental', 'Brightline Events', 'North Market', 'Lumen Fitness', 'Crestwave Studio', 'Ironclad Builders'];
         foreach ($partner_names as $partner_name) :
         ?>
             <span class="partner-logo" role="img" aria-label="<?php echo esc_attr($partner_name); ?>">
