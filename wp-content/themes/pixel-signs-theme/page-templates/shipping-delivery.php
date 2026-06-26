@@ -7,7 +7,7 @@ get_header();
 <section class="section narrow">
     <article class="content-card policy-content" style="padding: 36px;">
         <h1>Shipping &amp; Delivery</h1>
-        <p><em>Starter content for demo purposes. Replace with your finalized delivery details before launch.</em></p>
+        <p><em>Demo shipping and delivery content for Pixel Signs &amp; Printing. Confirm service areas and carrier details before launch.</em></p>
 
         <h2>Delivery options</h2>
         <ul>
@@ -25,7 +25,7 @@ get_header();
         <h2>Tracking your order</h2>
         <p>Follow your order anytime on the <a href="<?php echo esc_url(home_url('/order-tracking/')); ?>">Order Tracking</a> page.</p>
 
-        <p style="margin-top: 24px;"><strong>Last updated:</strong> [date]</p>
+        <p style="margin-top: 24px;"><strong>Last updated:</strong> June 26, 2026</p>
     </article>
 </section>
 <?php get_footer(); ?>

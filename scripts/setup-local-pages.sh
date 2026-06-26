@@ -4,18 +4,32 @@
 
 set -euo pipefail
 
-# Ensure WP-CLI is available
-if ! command -v wp &> /dev/null; then
-    echo "Error: wp command (WP-CLI) is not installed or not in your PATH."
-    echo "Please run this script inside the LocalWP Site Shell or ensure wp is available."
+# Allow running either inside LocalWP Site Shell or from this repository.
+WP_PATH="${WP_PATH:-$HOME/Local Sites/pixel/app/public}"
+WP_CLI_BIN="${WP_CLI_BIN:-/Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/posix/wp}"
+LOCAL_PHP_BIN="/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.29+0/bin/darwin-arm64/bin"
+LOCAL_PHP_INI="$HOME/Library/Application Support/Local/run/pfCzhFNG7/conf/php/php.ini"
+
+if command -v wp &> /dev/null; then
+    WP=(wp --path="$WP_PATH")
+elif [ -x "$WP_CLI_BIN" ]; then
+    export PATH="$LOCAL_PHP_BIN:$PATH"
+    if [ -f "$LOCAL_PHP_INI" ]; then
+        export PHPRC="$LOCAL_PHP_INI"
+    fi
+    WP=("$WP_CLI_BIN" --path="$WP_PATH")
+else
+    echo "Error: WP-CLI was not found."
+    echo "Run inside the LocalWP Site Shell, install WP-CLI, or set WP_CLI_BIN."
     exit 1
 fi
 
 echo "Initializing Pixel local page setup..."
+echo "Using WordPress path: $WP_PATH"
 
 # Configure permalinks for clean URLs
 echo "Configuring permalinks..."
-wp permalink structure '/%postname%/'
+"${WP[@]}" rewrite structure '/%postname%/'
 
 # Function to safely create or update a page
 ensure_page() {
@@ -25,22 +39,22 @@ ensure_page() {
 
     # Check if a page with the given slug already exists (any status)
     local post_id
-    post_id=$(wp post list --post_type=page --name="$slug" --post_status=any --format=ids 2>/dev/null)
+    post_id=$("${WP[@]}" post list --post_type=page --name="$slug" --post_status=any --format=ids 2>/dev/null)
 
     if [ -n "$post_id" ]; then
         echo " - Page '$title' (/$slug/) already exists with ID $post_id. Ensuring published status..."
-        wp post update "$post_id" --post_status=publish > /dev/null
+        "${WP[@]}" post update "$post_id" --post_status=publish > /dev/null
         if [ -n "$template" ]; then
             echo "   Assigning template: $template..."
-            wp post meta update "$post_id" _wp_page_template "$template" > /dev/null
+            "${WP[@]}" post meta update "$post_id" _wp_page_template "$template" > /dev/null
         fi
     else
         echo " - Creating page '$title' (/$slug/)..."
         if [ -n "$template" ]; then
-            post_id=$(wp post create --post_type=page --post_title="$title" --post_name="$slug" --post_status=publish --porcelain)
-            wp post meta update "$post_id" _wp_page_template "$template" > /dev/null
+            post_id=$("${WP[@]}" post create --post_type=page --post_title="$title" --post_name="$slug" --post_status=publish --porcelain)
+            "${WP[@]}" post meta update "$post_id" _wp_page_template "$template" > /dev/null
         else
-            wp post create --post_type=page --post_title="$title" --post_name="$slug" --post_status=publish > /dev/null
+            "${WP[@]}" post create --post_type=page --post_title="$title" --post_name="$slug" --post_status=publish > /dev/null
         fi
     fi
 }
@@ -62,5 +76,7 @@ ensure_page "Request Quote" "request-quote" "page-templates/request-quote.php"
 # Ensure standard WooCommerce pages (slugs cart and checkout)
 ensure_page "Cart" "cart" ""
 ensure_page "Checkout" "checkout" ""
+
+"${WP[@]}" rewrite flush --hard > /dev/null
 
 echo "Pixel local page setup completed successfully."

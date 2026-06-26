@@ -47,7 +47,7 @@ if (!defined('ABSPATH')) {
             <h3>Help &amp; Resources</h3>
             <a href="<?php echo esc_url(home_url('/contact/')); ?>">Contact Us</a>
             <a href="<?php echo esc_url(home_url('/pickup-locations/')); ?>">Pickup Locations</a>
-            <a href="<?php echo esc_url(home_url('/shipping-policy/')); ?>">Turnaround Information</a>
+            <a href="<?php echo esc_url(home_url('/shipping-delivery-policy/')); ?>">Turnaround Information</a>
             <a href="<?php echo esc_url(home_url('/faq/')); ?>">File Preparation Guide</a>
             <a href="<?php echo esc_url(home_url('/refund-policy/')); ?>">Cancellation &amp; Refunds</a>
             <a href="<?php echo esc_url(home_url('/faq/')); ?>">Help Center</a>
@@ -57,10 +57,10 @@ if (!defined('ABSPATH')) {
             <h3>Pixel</h3>
             <a href="<?php echo esc_url(home_url('/about/')); ?>">About Us</a>
             <a href="<?php echo esc_url(home_url('/#reviews')); ?>">Customer Reviews</a>
-            <a href="<?php echo esc_url(home_url('/terms/')); ?>">Terms &amp; Conditions</a>
-            <a href="<?php echo esc_url(home_url('/privacy/')); ?>">Privacy Policy</a>
+            <a href="<?php echo esc_url(home_url('/terms-conditions/')); ?>">Terms &amp; Conditions</a>
+            <a href="<?php echo esc_url(home_url('/privacy-policy/')); ?>">Privacy Policy</a>
             <a href="<?php echo esc_url(home_url('/refund-policy/')); ?>">Refund Policy</a>
-            <a href="<?php echo esc_url(home_url('/shipping-policy/')); ?>">Shipping Policy</a>
+            <a href="<?php echo esc_url(home_url('/shipping-delivery-policy/')); ?>">Shipping Policy</a>
         </div>
         <div class="footer-contact">
             <h3>Join Us</h3>

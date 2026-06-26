@@ -7,7 +7,7 @@ get_header();
 <section class="section narrow">
     <article class="content-card policy-content" style="padding: 36px;">
         <h1>Terms &amp; Conditions</h1>
-        <p><em>Starter content for demo purposes. Replace with your reviewed legal copy before launch.</em></p>
+        <p><em>Demo terms for Pixel Signs &amp; Printing. Review with your legal advisor before launch.</em></p>
 
         <h2>Using our service</h2>
         <p>By requesting a quote or placing an order with Pixel Signs &amp; Printing, you agree to these terms. You are responsible for the accuracy of the order details and artwork you provide.</p>
@@ -28,7 +28,7 @@ get_header();
         <h2>Liability</h2>
         <p>Our liability for any order is limited to the value of that order. We are not responsible for errors present in approved artwork.</p>
 
-        <p style="margin-top: 24px;"><strong>Last updated:</strong> [date]</p>
+        <p style="margin-top: 24px;"><strong>Last updated:</strong> June 26, 2026</p>
     </article>
 </section>
 <?php get_footer(); ?>

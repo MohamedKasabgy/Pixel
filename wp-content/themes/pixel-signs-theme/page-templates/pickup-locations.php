@@ -14,15 +14,15 @@ get_header();
     <div class="feature-grid" style="grid-template-columns: 1fr 1fr;">
         <article class="content-card" style="padding: 28px;">
             <h3>Downtown Print Studio</h3>
-            <p>123 Print Avenue, Suite 100<br>Your City, ST 00000</p>
+            <p>123 Print Avenue, Suite 100<br>New York, NY 10001</p>
             <p><strong>Hours:</strong> Mon–Fri, 9:00 AM – 6:00 PM</p>
-            <p><strong>Phone:</strong> <a href="tel:+10000000000">+1 (000) 000-0000</a></p>
+            <p><strong>Phone:</strong> <a href="tel:+15551234567">(555) 123-4567</a></p>
         </article>
         <article class="content-card" style="padding: 28px;">
             <h3>Northside Production Center</h3>
-            <p>456 Industrial Way<br>Your City, ST 00000</p>
+            <p>456 Industrial Way<br>Long Island City, NY 11101</p>
             <p><strong>Hours:</strong> Mon–Sat, 8:00 AM – 5:00 PM</p>
-            <p><strong>Phone:</strong> <a href="tel:+10000000001">+1 (000) 000-0001</a></p>
+            <p><strong>Phone:</strong> <a href="tel:+15551234568">(555) 123-4568</a></p>
         </article>
     </div>
 
