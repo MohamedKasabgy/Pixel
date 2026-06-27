@@ -118,7 +118,8 @@ $pixel_mega_menus = [
                             <span><?php echo esc_html($pixel_current_user->user_email); ?></span>
                         </div>
                         <div class="profile-actions">
-                            <a href="<?php echo esc_url(home_url('/client-dashboard/')); ?>">Dashboard</a>
+                            <a href="<?php echo esc_url(home_url('/my-account/')); ?>">My Account</a>
+                            <a href="<?php echo esc_url(home_url('/client-dashboard/')); ?>">Client Dashboard</a>
                             <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>">Logout</a>
                         </div>
                     </div>
