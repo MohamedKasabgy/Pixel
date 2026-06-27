@@ -105,8 +105,25 @@ $pixel_mega_menus = [
             <a href="<?php echo esc_url(home_url('/products/')); ?>">Services</a>
             <a href="<?php echo esc_url(home_url('/faq/')); ?>">Help</a>
             <a href="tel:+15551234567">(555) 123-4567</a>
+            <a href="<?php echo esc_url(home_url('/order-tracking/')); ?>">My Orders</a>
+            <a href="<?php echo esc_url(home_url('/upload-artwork/')); ?>">My Designs</a>
+            <a class="cart-link" href="<?php echo esc_url(home_url('/cart/')); ?>">Cart<?php echo $pixel_cart_count > 0 ? ' (' . esc_html((string) $pixel_cart_count) . ')' : ''; ?></a>
             <?php if ( is_user_logged_in() ) : ?>
-                <a href="<?php echo esc_url(home_url('/client-dashboard/')); ?>">Dashboard</a>
+                <?php $pixel_current_user = wp_get_current_user(); ?>
+                <div class="account-menu profile-menu">
+                    <button class="account-trigger" type="button" aria-haspopup="true" aria-expanded="false">Profile</button>
+                    <div class="account-panel profile-panel">
+                        <div class="profile-summary">
+                            <strong><?php echo esc_html($pixel_current_user->display_name ?: $pixel_current_user->user_login); ?></strong>
+                            <span><?php echo esc_html($pixel_current_user->user_email); ?></span>
+                        </div>
+                        <div class="profile-actions">
+                            <a href="<?php echo esc_url(home_url('/my-account/')); ?>">My Account</a>
+                            <a href="<?php echo esc_url(home_url('/client-dashboard/')); ?>">Client Dashboard</a>
+                            <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>">Logout</a>
+                        </div>
+                    </div>
+                </div>
             <?php else : ?>
                 <div class="account-menu">
                     <button class="account-trigger" type="button" aria-haspopup="true" aria-expanded="false">Account</button>
@@ -144,9 +161,6 @@ $pixel_mega_menus = [
                     </div>
                 </div>
             <?php endif; ?>
-            <a href="<?php echo esc_url(home_url('/order-tracking/')); ?>">My Orders</a>
-            <a href="<?php echo esc_url(home_url('/upload-artwork/')); ?>">My Designs</a>
-            <a class="cart-link" href="<?php echo esc_url(home_url('/cart/')); ?>">Cart<?php echo $pixel_cart_count > 0 ? ' (' . esc_html((string) $pixel_cart_count) . ')' : ''; ?></a>
         </nav>
     </div>
 
