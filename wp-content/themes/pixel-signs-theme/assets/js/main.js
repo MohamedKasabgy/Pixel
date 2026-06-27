@@ -22,21 +22,37 @@
 })();
 
 (function () {
-  const accountMenu = document.querySelector('.account-menu');
-  const trigger = accountMenu ? accountMenu.querySelector('.account-trigger') : null;
+  const accountMenus = Array.from(document.querySelectorAll('.account-menu'));
 
-  if (!accountMenu || !trigger) return;
+  if (accountMenus.length === 0) return;
 
-  trigger.addEventListener('click', function () {
-    const isOpen = accountMenu.classList.toggle('open');
-    trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  function closeMenu(accountMenu) {
+    const trigger = accountMenu.querySelector('.account-trigger');
+    accountMenu.classList.remove('open');
+    if (trigger) {
+      trigger.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  accountMenus.forEach(function (accountMenu) {
+    const trigger = accountMenu.querySelector('.account-trigger');
+
+    if (!trigger) return;
+
+    trigger.addEventListener('click', function () {
+      const wasOpen = accountMenu.classList.contains('open');
+      accountMenus.forEach(closeMenu);
+      accountMenu.classList.toggle('open', !wasOpen);
+      trigger.setAttribute('aria-expanded', wasOpen ? 'false' : 'true');
+    });
   });
 
   document.addEventListener('click', function (event) {
-    if (!accountMenu.contains(event.target)) {
-      accountMenu.classList.remove('open');
-      trigger.setAttribute('aria-expanded', 'false');
-    }
+    accountMenus.forEach(function (accountMenu) {
+      if (!accountMenu.contains(event.target)) {
+        closeMenu(accountMenu);
+      }
+    });
   });
 })();
 

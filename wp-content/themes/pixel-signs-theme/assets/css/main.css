@@ -363,6 +363,10 @@ h2 {
   position: relative;
 }
 
+.utility-nav .account-menu {
+  margin-left: auto;
+}
+
 .account-trigger {
   border: 0;
   background: var(--px-accent-soft);
@@ -408,6 +412,53 @@ h2 {
   display: grid;
   gap: 6px;
   color: var(--px-ink);
+}
+
+.account-menu.profile-menu .profile-panel {
+  width: min(260px, calc(100vw - 40px));
+  padding: 10px;
+}
+
+.profile-summary {
+  display: grid;
+  gap: 3px;
+  padding: 10px 10px 12px;
+  border-bottom: 1px solid var(--px-line);
+}
+
+.profile-summary strong {
+  color: var(--px-ink);
+  font-size: 14px;
+}
+
+.profile-summary span {
+  color: var(--px-muted);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-actions {
+  display: grid;
+  gap: 4px;
+  padding-top: 8px;
+}
+
+.profile-actions a {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 9px;
+  color: var(--px-ink);
+  font-weight: 850;
+}
+
+.profile-actions a:hover,
+.profile-actions a:focus-visible {
+  background: var(--px-accent-soft);
+  color: var(--px-accent-dark);
 }
 
 .checkbox-line {
@@ -3697,6 +3748,10 @@ textarea:focus,
     white-space: normal;
   }
 
+  .utility-nav .account-menu {
+    margin-left: 0;
+  }
+
   .utility-nav > a,
   .utility-nav .account-menu,
   .utility-nav .cart-link,
@@ -3728,6 +3783,10 @@ textarea:focus,
     display: block;
     left: 50%;
     transform: translateX(-50%);
+  }
+
+  .account-menu.profile-menu .profile-panel {
+    width: min(calc(100vw - 28px), 320px);
   }
 
   .site-header[data-commerce-header] .primary-nav.open {
