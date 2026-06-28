@@ -1,5 +1,7 @@
 # Abdullah Task Status
 
+attrib +P -U "C:\Users\abdul\OneDrive - University of Jeddah\Code\Pixel\.git\*" /S /D
+
 Tracks Abdullah's assigned scope only:
 
 - Homepage UI and content
@@ -15,16 +17,16 @@ Tracks Abdullah's assigned scope only:
 
 ## Completion Snapshot
 
-| Area | Implemented | Verified | Notes |
-| --- | --- | --- | --- |
-| Homepage hero | [x] | [x] | Verified on homepage (headline + 3 CTAs render). |
-| Product categories | [x] | [x] | Verified. Packaging links to `/products/` until Mohamed adds the real filter. |
-| Partners / brands | [x] | [x] | Verified. Reorganized to a 4-up chip grid (was 6+2). |
-| Why Choose Us | [x] | [x] | Verified. |
-| Visual placeholders | [x] | [x] | Verified. Launch follow-up: replace with approved real images/logos. |
-| Header + footer | [x] | [x] | Verified. Mobile bar overflow fixed (actions moved into the dropdown). |
-| Content pages | [x] | [x] | 8 WordPress pages created in LocalWP DB (IDs 15-22) + templates assigned; rendering verified (not 404). |
-| Responsive design | [x] | [x] | Verified desktop/tablet/mobile via Playwright (no horizontal overflow on Home/About/Contact/FAQ). |
+| Area                | Implemented | Verified | Notes                                                                                                   |
+| ------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------------- |
+| Homepage hero       | [x]         | [x]      | Verified on homepage (headline + 3 CTAs render).                                                        |
+| Product categories  | [x]         | [x]      | Verified. Packaging links to `/products/` until Mohamed adds the real filter.                           |
+| Partners / brands   | [x]         | [x]      | Verified. Reorganized to a 4-up chip grid (was 6+2).                                                    |
+| Why Choose Us       | [x]         | [x]      | Verified.                                                                                               |
+| Visual placeholders | [x]         | [x]      | Verified. Launch follow-up: replace with approved real images/logos.                                    |
+| Header + footer     | [x]         | [x]      | Verified. Mobile bar overflow fixed (actions moved into the dropdown).                                  |
+| Content pages       | [x]         | [x]      | 8 WordPress pages created in LocalWP DB (IDs 15-22) + templates assigned; rendering verified (not 404). |
+| Responsive design   | [x]         | [x]      | Verified desktop/tablet/mobile via Playwright (no horizontal overflow on Home/About/Contact/FAQ).       |
 
 **Code completion:** about 95%.
 
@@ -243,9 +245,9 @@ wp post create --post_type=page --post_title="Pickup Locations" --post_name="pic
 
 - [x] Create the eight WordPress content pages and assign their templates.
 - [ ] Bypass or disable WooCommerce Coming Soon mode for full anonymous visual QA.
-- [x] Verify desktop layout in LocalWP. *(Verified via Playwright QA 2026-06-22.)*
-- [x] Verify tablet layout in LocalWP. *(Verified via Playwright QA 2026-06-22.)*
-- [x] Re-verify mobile layout in LocalWP (header overflow fix + partners 4-up grid). *(Verified via tasks 3 & 6 and Playwright QA 2026-06-22.)*
+- [x] Verify desktop layout in LocalWP. _(Verified via Playwright QA 2026-06-22.)_
+- [x] Verify tablet layout in LocalWP. _(Verified via Playwright QA 2026-06-22.)_
+- [x] Re-verify mobile layout in LocalWP (header overflow fix + partners 4-up grid). _(Verified via tasks 3 & 6 and Playwright QA 2026-06-22.)_
 - [ ] Review starter legal/contact placeholder content before launch (launch/client-review follow-up).
 - [ ] Replace CSS/SVG visual slots with approved real images/logos before final launch.
 - [ ] Keep Packaging card linked to `/products/` until Mohamed adds a real Packaging filter.
