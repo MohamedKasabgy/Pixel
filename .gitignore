@@ -21,3 +21,7 @@ build/
 .env
 .env.*
 !.env.example
+
+# QA tooling output / large regenerable fixtures
+.playwright-mcp/
+docs/qa/fixtures/oversized-6mb.txt

@@ -25,6 +25,7 @@ Build a polished English-only printing website inspired by the supplied referenc
 - Uploaded files must be validated and restricted to safe artwork file types.
 - Use WordPress nonces and capability checks for forms/admin actions.
 - Keep code easy to hand off to another WordPress developer.
+- Keep docs up to date when changes affect setup, scope, workflows, page maps, QA, or team handoff. If a doc update would help the team, make it as part of the same task.
 
 ## MVP acceptance
 
